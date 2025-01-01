@@ -12,8 +12,8 @@ const app = express()
 app.use(
   cors({
     credentials: true,
-    origin: "*",
-    // origin: process.env.FRONTEND_URL,
+    // origin: "*",
+    origin: process.env.FRONTEND_URL,
   })
 )
 // Predefined list of authorized email IDs and their passwords
