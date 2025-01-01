@@ -7,6 +7,10 @@ import banner4 from "../assets/banner4.png"
 import banner5 from "../assets/banner5.png"
 import myPhoto from "../assets/myPhoto.png"
 import { FcPrevious, FcNext } from "react-icons/fc"  // Import the icons
+// Import Slick Carousel styles
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+
 const bannerImages = [banner1, banner2, banner3, banner4, banner5]
 
 const Home = () => {
@@ -36,33 +40,36 @@ const Home = () => {
   }
 
   return (
-    <div className="home">
-      <Slider ref={sliderRef} {...sliderSettings}>
-        {bannerImages.map((image, index) => (
-          <div key={index}>
-            <img
-              src={image}
-              alt={`Banner ${index + 1}`}
-              className="w-full h-auto"
-            />
-          </div>
-        ))}
-      </Slider>
+    <div className="home relative">
+       <div className="relative overflow-hidden">
+        <Slider ref={sliderRef} {...sliderSettings}>
+          {bannerImages.map((image, index) => (
+            <div key={index}>
+              <img
+                src={image}
+                alt={`Banner ${index + 1}`}
+                className="w-full h-auto"
+              />
+            </div>
+          ))}
+        </Slider>
 
-      {/* Custom navigation buttons */}
-      <button
-        onClick={handlePrev}
-        className="absolute left-5 top-1/2 transform -translate-y-1/2 text-white bg-blue-600 p-2 rounded-full shadow-lg sm:left-3 md:left-5 lg:left-8"
-      >
-        <FcPrevious size={18} /> {/* Previous icon from react-icons */}
-      </button>
+        {/* Previous Button */}
+        <button
+          onClick={handlePrev}
+          className="absolute left-3 md:left-5 top-1/2 transform -translate-y-1/2 text-white bg-blue-600 p-2 rounded-full shadow-lg opacity-80 hover:opacity-100 z-10"
+        >
+          <FcPrevious size={25} />
+        </button>
 
-      <button
-        onClick={handleNext}
-        className="absolute right-5 top-1/2 transform -translate-y-1/2 text-white bg-blue-600 p-2 rounded-full shadow-lg sm:right-3 md:right-5 lg:right-8"
-      >
-        <FcNext size={18} /> {/* Next icon from react-icons */}
-      </button>
+        {/* Next Button */}
+        <button
+          onClick={handleNext}
+          className="absolute right-3 md:right-5 top-1/2 transform -translate-y-1/2 text-white bg-blue-600 p-2 rounded-full shadow-lg opacity-80 hover:opacity-100 z-10"
+        >
+          <FcNext size={25} />
+        </button>
+      </div>
 
       {/* Professional Info Section Below the Slider */}
       <div className="p-8 bg-gray-100">
