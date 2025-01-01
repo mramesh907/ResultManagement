@@ -1,6 +1,6 @@
 import React from 'react'
-import Student from './components/Student'
-import Admin from './components/Admin'
+// import Student from './components/Student'
+// import Admin from './components/Admin'
 import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 // import viteLogo from '/vite.svg'

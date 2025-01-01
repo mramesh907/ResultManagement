@@ -3,6 +3,11 @@ import { toast } from "react-hot-toast"
 import SummaryApi from "../common/SummaryApi" // Import the SummaryApi
 
 const Admin = () => {
+  // State for email and password authentication
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+
   const [file, setFile] = useState(null)
   const [marks, setMarks] = useState({})
   const [subject, setSubject] = useState("")
@@ -16,6 +21,26 @@ const Admin = () => {
   })
   const [uploading, setUploading] = useState(false)
   const [topStudent, setTopStudent] = useState(null) // State for the top student in the selected semester
+
+  // Handle login
+  const handleLogin = (e) => {
+    e.preventDefault()
+    // Hard-coded credentials (You can replace with API for real authentication)
+    const validEmail1 = "maityramesh907@gmail.com"
+const validPassword1 = "admin123"
+
+const validEmail2 = "krishnagopal.dhal@midnaporecollege.ac.in"
+const validPassword2 = "admin123"
+
+if ((email === validEmail1 && password === validPassword1) || 
+    (email === validEmail2 && password === validPassword2)) {
+  setIsAuthenticated(true)
+  toast.success("Login successful!")
+} else {
+  toast.error("Invalid email or password")
+}
+
+  }
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0])
@@ -120,48 +145,79 @@ const Admin = () => {
   }
 
   // Fetch top student for selected semester
- const getTopStudent = async () => {
-   if (!semester) {
-     toast.error("Please select a semester!")
-     return
-   }
+  const getTopStudent = async () => {
+    if (!semester) {
+      toast.error("Please select a semester!")
+      return
+    }
 
-   try {
-     const response = await SummaryApi.getSemesterResults(semester)
-     console.log("Response data:", response)
+    try {
+      const response = await SummaryApi.getSemesterResults(semester)
+      console.log("Response data:", response)
 
-     if (response && response.message) {
-       // Destructure the response to get top student details
-       const { name, totalMarks, studentId, semester } = response
-       const results = semester.results // Get the results for the subjects
+      if (response && response.message) {
+        // Destructure the response to get top student details
+        const { name, totalMarks, studentId, semester } = response
+        const results = semester.results // Get the results for the subjects
 
-       // Prepare the data for the top student
-       const topStudent = {
-         name,
-         studentId,
-         totalMarks,
-         semester: semester.semester, // Semester number
-         results: results, // List of subjects and marks
-       }
+        // Prepare the data for the top student
+        const topStudent = {
+          name,
+          studentId,
+          totalMarks,
+          semester: semester.semester, // Semester number
+          results: results, // List of subjects and marks
+        }
 
-       // Update the state with the top student details
-       setTopStudent(topStudent)
+        // Update the state with the top student details
+        setTopStudent(topStudent)
 
-       toast.success("Top student data retrieved successfully!")
-     } else {
-       setTopStudent(null)
-       toast.error("No results found for the selected semester.")
-     }
-   } catch (error) {
-     console.error("Error fetching semester results:", error)
-     toast.error("Failed to fetch semester results.")
-   }
- }
-
-
+        toast.success("Top student data retrieved successfully!")
+      } else {
+        setTopStudent(null)
+        toast.error("No results found for the selected semester.")
+      }
+    } catch (error) {
+      console.error("Error fetching semester results:", error)
+      toast.error("Failed to fetch semester results.")
+    }
+  }
 
   return (
     <div className="p-6">
+      {!isAuthenticated ? (
+        <div>
+          {/* Login Form */}
+          <h2 className="text-2xl font-bold mb-4">Admin Login</h2>
+          <form onSubmit={handleLogin} className="mb-6">
+            <div className="mb-4">
+              <input
+                type="email"
+                placeholder="Enter Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="p-2 text-sm border border-gray-300 rounded w-full focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="mb-4">
+              <input
+                type="password"
+                placeholder="Enter Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="p-2 text-sm border border-gray-300 rounded w-full focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <button
+              type="submit"
+              className="bg-blue-500 text-white p-2 text-sm rounded hover:bg-blue-600 w-full"
+            >
+              Login
+            </button>
+          </form>
+        </div>
+      ):(
+      <div>
       <h2 className="text-2xl font-bold mb-4">Admin Panel</h2>
 
       {/* File Upload Section */}
@@ -332,7 +388,10 @@ const Admin = () => {
           </div>
         )}
       </div>
+      </div>
+      )}
     </div>
+    // End of Container
   )
 }
 
