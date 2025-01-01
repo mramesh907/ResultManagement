@@ -1,6 +1,6 @@
 import axios from "axios"
 
-const baseURL = "http://localhost:8080" // Base URL for the API
+const baseURL = import.meta.env.VITE_BACKEND_URL // Base URL for the API
 
 // Utility function for making API requests
 const apiRequest = async (url, method, data = null) => {
