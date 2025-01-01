@@ -28,7 +28,6 @@ const Admin = () => {
     // Hard-coded credentials (You can replace with API for real authentication)
     const validEmail1 = "maityramesh907@gmail.com"
 const validPassword1 = "admin123"
-
 const validEmail2 = "krishnagopal.dhal@midnaporecollege.ac.in"
 const validPassword2 = "admin123"
 
