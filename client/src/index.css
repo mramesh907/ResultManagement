@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* Global CSS */
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden; /* Prevent horizontal scrolling globally */
+}
+
+* {
+  box-sizing: border-box; /* Prevent unexpected width issues */
+}

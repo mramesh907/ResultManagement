@@ -34,6 +34,7 @@ const SummaryApi = {
     return apiRequest(`/api/students/checkStudentExist/${studentId}`, "GET")
   },
 
+  // Update student results
   updateStudentResults: async (studentId, semester, marksData) => {
     // We now expect marksData to contain the `results` object already, so we directly send it
     return apiRequest(
@@ -41,6 +42,11 @@ const SummaryApi = {
       "PUT",
       { results: marksData.results } // Send the `results` part only, which contains the marks
     )
+  },
+
+  // Get top student for a specific semester
+  getSemesterResults: async (semester) => {
+    return apiRequest(`/api/students/topStudentForSemester/${semester}`, "GET")
   },
 }
 

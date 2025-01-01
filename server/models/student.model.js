@@ -10,7 +10,11 @@ const studentSchema = new mongoose.Schema(
     year: { type: String, required: true },
     semesters: [
       {
-        semester: { type: String, required: true }, // Semester number (e.g., 1, 2, etc.)
+        semester: { 
+          type: String,
+           required: true,
+           enum: ['1', '2', '3', '4', '5', '6', '7', '8']
+          }, // Semester number (e.g., 1, 2, etc.)
         results: [
           {
             subject: { type: String, required: true }, // Subject name

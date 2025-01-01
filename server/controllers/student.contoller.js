@@ -287,3 +287,72 @@ export const updateMarksForSemester = async (req, res) => {
     res.status(500).json({ message: "Error updating marks", error: error.message });
   }
 };
+
+// Get top student for a specific semester
+export const getTopStudentForSemester = async (req, res) => {
+  const { semester } = req.params // Extract semester from request parameters
+
+  try {
+    // Find all students who have results for the specific semester
+    const students = await Student.find({
+      "semesters.semester": semester, // Check if the semester exists in any student's semesters (treating semester as a string)
+    })
+
+    if (students.length === 0) {
+      return res.status(404).json({
+        message: `No results found for semester ${semester}`,
+      })
+    }
+
+    let topStudent = null
+    let highestMarks = -1
+
+    // Iterate over each student and calculate their total marks for the given semester
+    for (const student of students) {
+      const semesterDetails = student.semesters.find(
+        (sem) => sem.semester === semester // Match semester as a string
+      )
+
+      // If no semester details are found, skip this student
+      if (!semesterDetails) {
+        continue // Skip this student
+      }
+
+      // Sum the marks for each subject in the semester
+      const totalMarks = semesterDetails.results.reduce(
+        (sum, result) => sum + result.mark,
+        0
+      )
+
+      // Update topStudent if current student's total marks are higher
+      if (totalMarks > highestMarks) {
+        highestMarks = totalMarks
+        topStudent = student
+      }
+    }
+
+    if (topStudent) {
+      res.status(200).json({
+        message: `Top student for semester ${semester}`,
+        studentId: topStudent.studentId,
+        name: topStudent.name,
+        totalMarks: highestMarks,
+        semester: topStudent.semesters.find(
+          (sem) => sem.semester === semester // Match semester as a string
+        ),
+      })
+    } else {
+      res.status(404).json({
+        message: "No student has marks for this semester.",
+      })
+    }
+  } catch (error) {
+    console.error("Error fetching top student for semester:", error)
+    res.status(500).json({
+      message: "Error fetching top student for semester",
+      error: error.message,
+    })
+  }
+}
+
+

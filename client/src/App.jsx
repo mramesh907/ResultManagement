@@ -6,28 +6,22 @@ import reactLogo from './assets/react.svg'
 // import viteLogo from '/vite.svg'
 import './App.css'
 import { Toaster } from 'react-hot-toast'
+import { Outlet } from 'react-router-dom'
+import Header from './components/Header'
+import Footer from './components/Footer'
+import "slick-carousel/slick/slick.css"
+import "slick-carousel/slick/slick-theme.css"
 
 function App() {
 
   return (
     <>
       <Toaster position="top-right" reverseOrder={false} />
-
-      <div className="min-h-screen bg-gray-100 p-6">
-        <h1 className="text-3xl font-bold text-center mb-6">
-          Student Result Management
-        </h1>
-
-        <div className="mb-10">
-          <h2 className="text-2xl font-semibold">Admin Section</h2>
-          <Admin />
-        </div>
-
-        <div className="mb-10">
-          <h2 className="text-2xl font-semibold">Student Section</h2>
-          <Student />
-        </div>
-      </div>
+      <Header/>
+      <main className='min-h-screen'>
+        <Outlet />
+      </main>
+      <Footer/>
     </>
   )
 }
