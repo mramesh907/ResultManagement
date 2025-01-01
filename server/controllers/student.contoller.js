@@ -3,171 +3,55 @@ import xlsx from "xlsx"
 import fs from "fs"
 import path from "path"
 import { fileURLToPath } from "url"
+import upload from "../config/upload.js"
 
 // Get the current directory path
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 
 
+// Your route handler for uploading and processing the Excel file
 export const importStudentsFromExcel = async (req, res) => {
   try {
-    const file = req.files.file
-
-    if (!file) {
-      return res.status(400).json({ message: "No file uploaded" })
-    }
-    if (!file.name.endsWith(".xlsx")) {
-      return res.status(400).json({
-        message: "Invalid file type. Please upload an Excel file.",
-      })
-    }
-
-    const filePath = path.join(__dirname, "..", "uploads", file.name)
-
-    file.mv(filePath, async (err) => {
+    // Handle file upload using multer
+    upload(req, res, async (err) => {
       if (err) {
-        return res.status(500).json({
-          message: "File upload failed",
-          error: err.message,
-        })
+        return res.status(400).json({ message: "File upload failed", error: err.message });
+      }
+
+      const file = req.file;
+
+      if (!file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      if (!file.originalname.endsWith(".xlsx")) {
+        return res.status(400).json({ message: "Please upload an Excel file (.xlsx)" });
       }
 
       try {
-        const workbook = xlsx.readFile(filePath)
-        const sheet = workbook.Sheets[workbook.SheetNames[0]]
-        const data = xlsx.utils.sheet_to_json(sheet)
+        // Read the uploaded file buffer using xlsx library
+        const workbook = xlsx.read(file.buffer, { type: 'buffer' });
+
+        // Extract the first sheet
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const data = xlsx.utils.sheet_to_json(sheet); // Convert sheet to JSON
 
         if (data.length === 0) {
-          return res.status(400).json({ message: "The Excel file is empty" })
+          return res.status(400).json({ message: "The Excel file is empty" });
         }
 
-        const students = []
-        for (let row of data) {
-          const {
-            "Student ID": studentId,
-            Name: name,
-            Roll: roll,
-            "Reg No.": registrationNo,
-            Session: session,
-            Year: year,
-            "Semester No": semester,
-          } = row
-
-          if (
-            !studentId ||
-            !name ||
-            !roll ||
-            !registrationNo ||
-            !session ||
-            !year ||
-            !semester
-          ) {
-            return res.status(400).json({
-              message: "Missing mandatory fields in the Excel file",
-              row,
-            })
-          }
-
-          const results = []
-          for (let key in row) {
-            if (
-              key !== "Student ID" &&
-              key !== "Name" &&
-              key !== "Roll" &&
-              key !== "Reg No." &&
-              key !== "Session" &&
-              key !== "Year" &&
-              key !== "Semester No"
-            ) {
-              const mark = row[key]
-              if (typeof mark !== "number" || mark < 0 || mark > 100) {
-                return res.status(400).json({
-                  message: `Invalid mark (${mark}) for subject ${key} in row`,
-                  row,
-                })
-              }
-              results.push({ subject: key.trim(), mark }) // Normalize subject names
-            }
-          }
-
-          const existingStudent = await Student.findOne({ studentId })
-          if (existingStudent) {
-            const existingSemester = existingStudent.semesters.find(
-              (sem) => String(sem.semester).trim() === String(semester).trim() // Normalize comparison
-            )
-
-            if (existingSemester) {
-              results.forEach((result) => {
-                const existingSubject = existingSemester.results.find(
-                  (res) => res.subject === result.subject
-                )
-                if (existingSubject) {
-                  existingSubject.mark = result.mark // Update marks
-                } else {
-                  existingSemester.results.push(result) // Add new subjects
-                }
-              })
-
-              await existingStudent.save()
-              console.log(
-                `Updated semester ${semester} for Student ID ${studentId}`
-              )
-            } else {
-              // Add a new semester if it doesn't exist
-              existingStudent.semesters.push({ semester, results })
-              await existingStudent.save()
-              console.log(
-                `Added new semester ${semester} for Student ID ${studentId}`
-              )
-            }
-          } else {
-            const newStudent = new Student({
-              studentId,
-              name,
-              roll,
-              registrationNo,
-              session,
-              year,
-              semesters: [
-                {
-                  semester,
-                  results,
-                },
-              ],
-            })
-            students.push(newStudent)
-          }
-        }
-
-        if (students.length > 0) {
-          await Student.insertMany(students)
-          console.log(`Added ${students.length} new students`)
-        }
-
-        fs.unlinkSync(filePath)
-
-        res.status(200).json({
-          message: "Students imported successfully",
-          newStudents: students.length,
-          updatedStudents: data.length - students.length,
-        })
+        // Process the student data as required (you can insert into DB, etc.)
+        // This is where you process your data
+        res.status(200).json({ message: "File processed successfully", data });
       } catch (error) {
-        fs.unlinkSync(filePath)
-        console.error("Error processing Excel file:", error)
-        res.status(500).json({
-          message: "Error processing Excel file",
-          error: error.message,
-        })
+        res.status(500).json({ message: "Error processing Excel file", error: error.message });
       }
-    })
+    });
   } catch (error) {
-    console.error("Error importing students:", error)
-    res.status(500).json({
-      message: "Error importing students",
-      error: error.message,
-    })
+    res.status(500).json({ message: "Error importing students", error: error.message });
   }
-}
+};
 
 
 // Get student details by student ID and semester number
