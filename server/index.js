@@ -31,6 +31,11 @@ app.use(fileUpload());
 
 const PORT = 8080 || process.env.PORT
 
+app.get("/", (req, res) => {
+  res.status(200).json({
+    message: "Welcome to the Student Management System",
+  })
+})
 app.use("/api/auth", authRouters)
 app.use("/api/students", studentRoutes)
 
