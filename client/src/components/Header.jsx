@@ -7,8 +7,10 @@ const Header = () => {
     <header className="h-20 shadow-md sticky top-0 flex bg-white">
       <div className="container mx-auto flex justify-between items-center">
         {/* logo */}
-        <div className="w-full">
-          <img  width={350} height={10} src={logo} alt="logo" />
+        <div className="w-full cursor-pointer">
+          <NavLink to="/" className="block">
+            <img width={350} height={10} src={logo} alt="logo" />
+          </NavLink>
         </div>
         <nav>
           <ul className="flex gap-8 items-center">

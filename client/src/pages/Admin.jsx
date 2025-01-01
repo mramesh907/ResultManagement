@@ -179,7 +179,7 @@ if ((email === validEmail1 && password === validPassword1) ||
       }
     } catch (error) {
       console.error("Error fetching semester results:", error)
-      toast.error("Failed to fetch semester results.")
+      toast.error("No results found for the selected semester.")
     }
   }
 
