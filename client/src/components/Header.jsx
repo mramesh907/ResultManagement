@@ -1,16 +1,22 @@
-import React, { useState } from "react"
-import { NavLink } from "react-router-dom"
+import React, { useState, useEffect } from "react"
+import { NavLink, useLocation } from "react-router-dom"
 import { FaHome, FaUser, FaBars, FaTimes } from "react-icons/fa" // Importing icons
 import { RiAdminFill } from "react-icons/ri"
 import logo from "../assets/Midnapore_College_logo.png"
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const location = useLocation() // Hook to access the current location (URL)
 
   // Toggle the mobile menu
   const toggleMenu = () => {
     setIsMenuOpen((prev) => !prev)
   }
+
+  // Close the mobile menu when the route changes
+  useEffect(() => {
+    setIsMenuOpen(false)
+  }, [location]) // This runs every time the location changes (i.e., on navigation)
 
   return (
     <header className="h-20 shadow-md sticky top-0 flex bg-white z-50">
@@ -23,7 +29,10 @@ const Header = () => {
         </div>
 
         {/* Mobile menu button */}
-        <button className="lg:hidden text-2xl p-3 rounded-md mr-2" onClick={toggleMenu}>
+        <button
+          className="lg:hidden text-2xl p-3 rounded-md mr-2"
+          onClick={toggleMenu}
+        >
           {isMenuOpen ? (
             <FaTimes className="text-2xl" /> // Close icon (X)
           ) : (
