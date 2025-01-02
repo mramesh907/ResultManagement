@@ -16,14 +16,14 @@ const Header = () => {
     <header className="h-20 shadow-md sticky top-0 flex bg-white z-50">
       <div className="container mx-auto flex justify-between items-center">
         {/* logo */}
-        <div className="w-full cursor-pointer">
+        <div className="w-auto cursor-pointer">
           <NavLink to="/" className="block">
             <img width={350} height={10} src={logo} alt="logo" />
           </NavLink>
         </div>
 
         {/* Mobile menu button */}
-        <button className="lg:hidden text-xl" onClick={toggleMenu}>
+        <button className="lg:hidden text-2xl p-3 rounded-md mr-2" onClick={toggleMenu}>
           {isMenuOpen ? (
             <FaTimes className="text-2xl" /> // Close icon (X)
           ) : (
