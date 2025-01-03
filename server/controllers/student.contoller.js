@@ -13,7 +13,7 @@ const __dirname = path.dirname(__filename);
 export const importStudentsFromExcel = async (req, res) => {
   try {
     const file = req.files.file
-
+console.log('file',file)
     if (!file) {
       return res.status(400).json({ message: "No file uploaded" })
     }
@@ -23,8 +23,15 @@ export const importStudentsFromExcel = async (req, res) => {
       })
     }
 
-    const filePath = path.join(__dirname, "..", "uploads", file.name)
+    // const filePath = path.join(__dirname, "..", "uploads", file.name)
+    // const filePath = path.join('/tmp', file.name)
+    const tempDir =
+      process.env.NODE_ENV === "production"
+        ? "/tmp"
+        : path.join(__dirname,'..', "uploads")
+    const filePath = path.join(tempDir, file.name)
 
+console.log('filePath',filePath)
     file.mv(filePath, async (err) => {
       if (err) {
         return res.status(500).json({
@@ -110,16 +117,16 @@ export const importStudentsFromExcel = async (req, res) => {
               })
 
               await existingStudent.save()
-              console.log(
-                `Updated semester ${semester} for Student ID ${studentId}`
-              )
+              // console.log(
+              //   `Updated semester ${semester} for Student ID ${studentId}`
+              // )
             } else {
               // Add a new semester if it doesn't exist
               existingStudent.semesters.push({ semester, results })
               await existingStudent.save()
-              console.log(
-                `Added new semester ${semester} for Student ID ${studentId}`
-              )
+              // console.log(
+              //   `Added new semester ${semester} for Student ID ${studentId}`
+              // )
             }
           } else {
             const newStudent = new Student({
