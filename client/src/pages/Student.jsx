@@ -244,10 +244,6 @@ const generatePDF = () => {
   }
 
   // Footer Section
-  currentY += 20
-  doc.setFontSize(12)
-  doc.text("Remark: Qualified to the Next Semester", marginLeft, currentY)
-  currentY += 10
   doc.text("Published On: 01/10/2023", marginLeft, currentY)
   currentY += 20
   doc.setFontSize(10)
