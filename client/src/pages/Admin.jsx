@@ -152,7 +152,7 @@ if ((email === validEmail1 && password === validPassword1) ||
 
     try {
       const response = await SummaryApi.getSemesterResults(semester)
-      console.log("Response data:", response)
+      // console.log("Response data:", response)
 
       if (response && response.message) {
         // Destructure the response to get top student details

@@ -36,7 +36,7 @@ const Student = () => {
         toast.error("No data found for this student and semester.")
       }
     } catch (error) {
-      console.error("Error fetching student data", error)
+      // console.error("Error fetching student data", error)
       setSemesterData(null)
       setFetchAttempted(true)
       toast.dismiss()
@@ -49,106 +49,229 @@ const Student = () => {
   }
 
   // Function to generate PDF using jsPDF
-  const generatePDF = () => {
-    if (!semesterData) {
-      toast.error("No data available to generate PDF.")
-      return
-    }
-
-    const doc = new jsPDF()
-    const marginLeft = 10
-
-    // Header
-    doc.setFont("helvetica", "bold")
-    doc.setFontSize(18)
-    doc.text("MIDNAPORE COLLEGE (AUTONOMOUS)", 105, 20, "center")
-    doc.setFontSize(12)
-    doc.text(
-      "Affiliated to Vidyasagar University, Midnapore, West Bengal - 721101",
-      105,
-      30,
-      "center"
-    )
-    doc.text("AICTE APPROVED", 105, 40, "center")
-    doc.line(20, 45, 190, 45)
-
-    // Student Details Section
-    let currentY = 60
-    doc.setFont("helvetica", "normal")
-
-    // Row 1: Student ID beside Student Name
-    doc.text(`Student ID: ${semesterData.studentId || "N/A"}`, 20, currentY)
-    doc.text(`Student Name: ${semesterData.name || "N/A"}`, 120, currentY)
-
-    // Row 2: Roll No beside Registration Number
-    currentY += 10
-    doc.text(`Roll No: ${semesterData.roll || "N/A"}`, 20, currentY)
-    doc.text(
-      `Registration Number: ${semesterData.registrationNo || "N/A"} of ${semesterData.session || "N/A"}`,
-      120,
-      currentY
-    )
-
-    // Increment currentY to add space for the next section
-    currentY += 10
-
-    // Title
-    currentY += 20
-    doc.setFontSize(16)
-    doc.text(
-      `Student Results for Semester ${semesterData.semester.semester || "N/A"}`,
-      marginLeft,
-      currentY
-    )
-
-    // // Student Details
-    // doc.setFontSize(12)
-    // const studentDetails = [
-    //   `Student ID: ${semesterData.studentId}`,
-    //   `Name: ${semesterData.name}`,
-    //   `Roll: ${semesterData.roll}`,
-    //   `Registration No: ${semesterData.registrationNo}`,
-    //   `Session: ${semesterData.session}`,
-    //   `Year: ${semesterData.year}`,
-    // ]
-
-    // currentY += 10
-    // semesterData.forEach((detail) => {
-    //   doc.text(detail, marginLeft, currentY)
-    //   currentY += 10
-    // })
-    // console.log("results", semesterData.semester.results)
-
-    // Results Table
-    if (
-      semesterData.semester.results &&
-      semesterData.semester.results.length > 0
-    ) {
-      const tableHeaders = ["Subject", "Mark"]
-      const tableData = semesterData.semester.results.map((result) => [
-        result.subject,
-        result.mark,
-      ])
-
-      doc.autoTable({
-        head: [tableHeaders],
-        body: tableData,
-        startY: currentY + 5,
-        margin: { left: marginLeft },
-        theme: "grid",
-        styles: { fontSize: 10 },
-        headStyles: { fillColor: [0, 0, 0], textColor: [255, 255, 255] },
-      })
-    } else {
-      doc.text("No results available.", marginLeft, currentY + 10)
-    }
-
-    // Save PDF
-    doc.save(
-      `student_${semesterData.studentId}_semester_${semesterData.semester.semester}.pdf`
-    )
-    toast.success("PDF generated and downloaded!")
+const generatePDF = () => {
+  if (!semesterData) {
+    console.error("No data available to generate PDF.")
+    return
   }
+
+  const doc = new jsPDF()
+  const marginLeft = 20
+  let currentY = 20
+
+  // Add logo to the header
+  const logo = new Image()
+  logo.src = "/favicon.png" // Replace with your logo path
+  doc.addImage(logo, "PNG", marginLeft, currentY, 20, 20)
+
+  // Function to check if content overflows and add a new page if necessary
+  
+
+  // Header Section
+  doc.setFont("helvetica", "bold")
+  doc.setFontSize(18)
+  doc.text("MIDNAPORE COLLEGE (AUTONOMOUS)", 105, currentY + 10, "center")
+  doc.setFontSize(12)
+  doc.text(
+    "Affiliated to Vidyasagar University, Midnapore, West Bengal - 721101",
+    105,
+    currentY + 20,
+    "center"
+  )
+  currentY += 30
+  doc.text("AICTE APPROVED", 105, currentY, "center")
+  doc.line(20, currentY + 5, 190, currentY + 5)
+  currentY += 15
+
+  // Student Details
+  doc.setFont("helvetica", "normal")
+  doc.text(
+    `Student ID: ${semesterData.studentId || "N/A"}`,
+    marginLeft,
+    currentY
+  )
+  doc.text(`Student Name: ${semesterData.name || "N/A"}`, 120, currentY)
+  currentY += 10
+  doc.text(`Roll No: ${semesterData.roll || "N/A"}`, marginLeft, currentY)
+  doc.text(
+    `Registration No: ${semesterData.registrationNo || "N/A"} of ${semesterData.session || "N/A"}`,
+    120,
+    currentY
+  )
+  currentY += 20
+
+  // Semester Results
+  doc.setFontSize(16)
+  doc.text(
+    `Student Results for Semester ${semesterData.semester.semester || "N/A"}`,
+    marginLeft,
+    currentY
+  )
+  currentY += 10
+
+  if (
+    semesterData.semester.results &&
+    semesterData.semester.results.length > 0
+  ) {
+    const tableHeaders = [
+      "Subject",
+      "Full Marks",
+      "Marks Obtained",
+      "Grade",
+      "Grade Points",
+    ]
+    const tableData = semesterData.semester.results.map((result) => {
+      const percentage = (result.mark / 100) * 100
+      let grade, gradePoints
+
+      if (percentage >= 90) {
+        grade = "O"
+        gradePoints = 10
+      } else if (percentage >= 80) {
+        grade = "A+"
+        gradePoints = 9
+      } else if (percentage >= 70) {
+        grade = "A"
+        gradePoints = 8
+      } else if (percentage >= 60) {
+        grade = "B+"
+        gradePoints = 7
+      } else if (percentage >= 50) {
+        grade = "B"
+        gradePoints = 6
+      } else if (percentage >= 40) {
+        grade = "C"
+        gradePoints = 5
+      } else if (percentage >= 30) {
+        grade = "P"
+        gradePoints = 4
+      } else {
+        grade = "F"
+        gradePoints = 0
+      }
+
+      return [
+        result.subject || "N/A",
+        "100",
+        result.mark || "N/A",
+        grade,
+        gradePoints,
+      ]
+    })
+
+    // Add totals
+    const totalMarksObtained = semesterData.semester.results.reduce(
+      (sum, row) => sum + (parseInt(row.mark) || 0),
+      0
+    )
+    const totalFullMarks = semesterData.semester.results.length * 100
+    const percentage = (totalMarksObtained / totalFullMarks) * 100
+    let resultRemark = "Not Qualified"
+    let resultClass = "Fail"
+
+    if (percentage >= 50) {
+      resultRemark = "Qualified to the Next Semester"
+      resultClass = percentage >= 60 ? "First Class" : "Second Class"
+    }
+
+    tableData.push(["Total", totalFullMarks, totalMarksObtained, "", ""])
+
+    doc.autoTable({
+      head: [tableHeaders],
+      body: tableData,
+      startY: currentY,
+      theme: "grid",
+      margin: { left: marginLeft },
+      styles: {
+        fontSize: 12,
+        lineWidth: 0.5, // Border width
+        lineColor: [0, 0, 0], // Border color (black)
+      },
+      headStyles: {
+        fillColor: [0, 0, 0],
+        textColor: [255, 255, 255],
+        lineWidth: 1, // Thicker border for headers
+      },
+      bodyStyles: {
+        fontStyle: "normal", // Normal font for body text
+        textColor: [0, 0, 0],
+      },
+      willDrawCell: (data) => {
+        const { section, column, cell } = data
+
+        // Draw vertical borders between header columns, excluding the first and last column
+        if (section === "head") {
+          const x = cell.x + cell.width // Right edge of the header cell
+          const yStart = cell.y // Top of the header cell
+          const yEnd = cell.y + cell.height // Bottom of the header cell
+
+          // Draw border only if the current column is not the first or last one
+          if (
+            column.index !== 0 &&
+            column.index !== data.table.columns.length - 1
+          ) {
+            doc.setLineWidth(0.5) // Border thickness
+            doc.setDrawColor(255, 255, 255) // White color for the line
+            doc.line(x, yStart, x, yEnd) // Draw the vertical line
+          }
+        }
+      },
+    })
+
+    currentY = doc.lastAutoTable.finalY + 10
+
+    // Summary below table
+    const leftColumnX = marginLeft // X-coordinate for the left column
+    const rightColumnX = 120 // X-coordinate for the right column
+    const rowHeight = 10 // Spacing between rows
+    // Row 1: Grand Total Marks and Total Marks Obtained
+    doc.text(`Grand Total Marks: ${totalFullMarks}`, leftColumnX, currentY)
+    doc.text(
+      `Total Marks Obtained: ${totalMarksObtained}`,
+      rightColumnX,
+      currentY
+    )
+    currentY += rowHeight
+    // Row 2: Percentage and Result
+    doc.text(`Percentage: ${percentage.toFixed(2)}%`, leftColumnX, currentY)
+    doc.text(`Result: ${resultClass}`, rightColumnX, currentY)
+    currentY += rowHeight
+
+    // Row 3: Remarks
+    doc.text(`Remarks: ${resultRemark}`, leftColumnX, currentY)
+  } else {
+    doc.text("No results available.", marginLeft, currentY)
+  }
+
+  // Footer Section
+  currentY += 20
+  doc.setFontSize(12)
+  doc.text("Remark: Qualified to the Next Semester", marginLeft, currentY)
+  currentY += 10
+  doc.text("Published On: 01/10/2023", marginLeft, currentY)
+  currentY += 20
+  doc.setFontSize(10)
+const checkAndAddPage = () => {
+  if (currentY > 270) {
+    // If the current Y exceeds the page height minus margin
+    doc.addPage() // Add a new page
+    currentY = 20 // Reset Y position for the new page
+  }
+}
+  // First column
+  doc.text("Verified by:", marginLeft, currentY)
+  doc.text("Teacher-in-Charge", marginLeft, currentY + 10)
+  doc.text("Controller of Examinations", marginLeft, currentY + 20)
+
+  // Second column
+  doc.text("Chief Controller of Examinations", 140, currentY)
+
+  doc.save(
+    `student_${semesterData.studentId}_semester_${semesterData.semester.semester}.pdf`
+  )
+}
+
+
 
   return (
     <div className="p-6">

@@ -77,7 +77,7 @@ const generatePDF = (semesterData) => {
       doc.rect(x, tableStartY, columnWidths[index], rowHeight)
     })
 
-    currentY = tableStartY + rowHeight
+    currentY = currentY + rowHeight
 
     // Draw Table Rows with Borders
     doc.setFont("helvetica", "normal")
