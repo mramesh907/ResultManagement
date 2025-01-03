@@ -244,6 +244,7 @@ const generatePDF = () => {
   }
 
   // Footer Section
+  currentY += 20
   doc.text("Published On: 01/10/2023", marginLeft, currentY)
   currentY += 20
   doc.setFontSize(10)
