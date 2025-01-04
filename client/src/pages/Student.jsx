@@ -208,7 +208,7 @@ const generatePDF = () => {
           // Draw border only if the current column is not the first or last one
           if (
             column.index !== 0 &&
-            column.index !== data.table.columns.length - 1
+            column.index !== data.table.columns.length
           ) {
             doc.setLineWidth(0.5) // Border thickness
             doc.setDrawColor(255, 255, 255) // White color for the line
