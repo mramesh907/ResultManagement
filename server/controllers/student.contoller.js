@@ -13,7 +13,6 @@ const __dirname = path.dirname(__filename);
 export const importStudentsFromExcel = async (req, res) => {
   try {
     const file = req.files.file
-console.log('file',file)
     if (!file) {
       return res.status(400).json({ message: "No file uploaded" })
     }
@@ -31,7 +30,7 @@ console.log('file',file)
         : path.join(__dirname,'..', "uploads")
     const filePath = path.join(tempDir, file.name)
 
-console.log('filePath',filePath)
+
     file.mv(filePath, async (err) => {
       if (err) {
         return res.status(500).json({
@@ -70,6 +69,7 @@ console.log('filePath',filePath)
             !year ||
             !semester
           ) {
+            fs.unlinkSync(filePath)
             return res.status(400).json({
               message: "Missing mandatory fields in the Excel file",
               row,
@@ -149,7 +149,6 @@ console.log('filePath',filePath)
 
         if (students.length > 0) {
           await Student.insertMany(students)
-          console.log(`Added ${students.length} new students`)
         }
 
         fs.unlinkSync(filePath)
@@ -169,6 +168,7 @@ console.log('filePath',filePath)
       }
     })
   } catch (error) {
+        fs.unlinkSync(filePath)
     console.error("Error importing students:", error)
     res.status(500).json({
       message: "Error importing students",
@@ -221,7 +221,6 @@ export const checkStudentExist = async (req, res) => {
   const { studentId } = req.params
 
   try {
-    console.log("Received studentId:", studentId)
     // Query the database to check if the student exists
     const student = await Student.findOne({ studentId })
 
