@@ -287,17 +287,17 @@ export const updateMarksForSemester = async (req, res) => {
     }
 
     // Find the semester in the student's semesters array
-    const semesterIndex = student.semesters.findIndex(
+    let semesterIndex = student.semesters.findIndex(
       (sem) => sem.semester === semester
     )
 
     // If the semester doesn't exist
     if (semesterIndex === -1) {
-      return res
-        .status(404)
-        .json({
-          message: `Semester ${semester} not found for student ${studentId}`,
-        })
+      student.semesters.push({
+        semester: semester,
+        results: [], // New semester with empty results
+      })
+      semesterIndex = student.semesters.length - 1 
     }
 
     // Get the semester object
