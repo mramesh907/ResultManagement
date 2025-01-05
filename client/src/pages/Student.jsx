@@ -54,6 +54,13 @@ const generatePDF = () => {
     console.error("No data available to generate PDF.")
     return
   }
+  const checkAndAddPage = () => {
+    if (currentY > 270) {
+      // If the current Y exceeds the page height minus margin
+      doc.addPage() // Add a new page
+      currentY = 20 // Reset Y position for the new page
+    }
+  }
 
   const doc = new jsPDF()
   const marginLeft = 20
@@ -115,10 +122,12 @@ const generatePDF = () => {
   ) {
     const tableHeaders = [
       "Subject",
-      "Full Marks",
+      "Max Marks",
       "Marks Obtained",
       "Grade",
       "Grade Points",
+      "Credit",
+      "Credit Points",
     ]
     const tableData = semesterData.semester.results.map((result) => {
       const percentage = (result.mark / 100) * 100
@@ -149,6 +158,7 @@ const generatePDF = () => {
         grade = "F"
         gradePoints = 0
       }
+      const creditPoint = (result.credit || 0) * gradePoints
 
       return [
         result.subject || "N/A",
@@ -156,10 +166,29 @@ const generatePDF = () => {
         result.mark || "N/A",
         grade,
         gradePoints,
+        result.credit || "N/A",
+        creditPoint.toFixed(2),
       ]
     })
 
     // Add totals
+    const totalCredits = semesterData.semester.results.reduce(
+      (sum, row) => sum + (row.credit || 0),
+      0
+    )
+    const totalCreditPoints = semesterData.semester.results.reduce(
+      (sum, row) => sum + (row.credit || 0) * ((row.mark / 100) * 10 || 0),
+      0
+    )
+    const sgpa =
+      totalCredits > 0 ? (totalCreditPoints / totalCredits).toFixed(2) : "N/A"
+    // // CGPA Calculation (if applicable)
+    // const totalCreditPointsAllSemesters = semesterData.cgpa.totalCreditPoints
+    // const totalCreditsAllSemesters = semesterData.cgpa.totalCredits
+    // const cgpa =
+    //   totalCreditsAllSemesters > 0
+    //     ? (totalCreditPointsAllSemesters / totalCreditsAllSemesters).toFixed(2)
+    //     : "N/A"
     const totalMarksObtained = semesterData.semester.results.reduce(
       (sum, row) => sum + (parseInt(row.mark) || 0),
       0
@@ -174,8 +203,16 @@ const generatePDF = () => {
       resultClass = percentage >= 60 ? "First Class" : "Second Class"
     }
 
-    tableData.push(["Total", totalFullMarks, totalMarksObtained, "", ""])
-
+    tableData.push([
+      "Total",
+      totalFullMarks,
+      totalMarksObtained,
+      "",
+      "",
+      totalCredits,
+      totalCreditPoints.toFixed(2),
+    ])
+checkAndAddPage()
     doc.autoTable({
       head: [tableHeaders],
       body: tableData,
@@ -224,7 +261,22 @@ const generatePDF = () => {
     const leftColumnX = marginLeft // X-coordinate for the left column
     const rightColumnX = 120 // X-coordinate for the right column
     const rowHeight = 10 // Spacing between rows
-    // Row 1: Grand Total Marks and Total Marks Obtained
+
+    // Row 1: Credit, Grand Total Credit Points, and SGPA
+    doc.text(
+      `Grand Total Credit Points: ${totalCredits}`,
+      leftColumnX,
+      currentY
+    )
+    doc.text(
+      `SGPA: ${totalCreditPoints.toFixed(2)}`,
+      leftColumnX,
+      currentY + rowHeight
+    )
+    doc.text(`Credit Points: ${sgpa}`, rightColumnX, currentY)
+    currentY += 2 * rowHeight
+
+    // Row 2: Grand Total Marks and Total Marks Obtained
     doc.text(`Grand Total Marks: ${totalFullMarks}`, leftColumnX, currentY)
     doc.text(
       `Total Marks Obtained: ${totalMarksObtained}`,
@@ -232,29 +284,27 @@ const generatePDF = () => {
       currentY
     )
     currentY += rowHeight
-    // Row 2: Percentage and Result
+
+    // Row 3: Percentage and Result
     doc.text(`Percentage: ${percentage.toFixed(2)}%`, leftColumnX, currentY)
     doc.text(`Result: ${resultClass}`, rightColumnX, currentY)
     currentY += rowHeight
 
-    // Row 3: Remarks
+    // Row 4: Remarks
     doc.text(`Remarks: ${resultRemark}`, leftColumnX, currentY)
+
+    checkAndAddPage()
   } else {
     doc.text("No results available.", marginLeft, currentY)
   }
 
   // Footer Section
   currentY += 20
-  doc.text("Published On: 01/10/2023", marginLeft, currentY)
+  const currentDate = new Date().toLocaleDateString("en-GB") // Format: DD/MM/YYYY
+  doc.text(`Published On: ${currentDate}`, marginLeft, currentY)
   currentY += 20
   doc.setFontSize(10)
-const checkAndAddPage = () => {
-  if (currentY > 270) {
-    // If the current Y exceeds the page height minus margin
-    doc.addPage() // Add a new page
-    currentY = 20 // Reset Y position for the new page
-  }
-}
+
   // First column
   doc.text("Verified by:", marginLeft, currentY)
   doc.text("Teacher-in-Charge", marginLeft, currentY + 10)

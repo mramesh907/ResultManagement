@@ -42,14 +42,41 @@ export const importStudentsFromExcel = async (req, res) => {
       try {
         const workbook = xlsx.readFile(filePath)
         const sheet = workbook.Sheets[workbook.SheetNames[0]]
-        const data = xlsx.utils.sheet_to_json(sheet)
-
-        if (data.length === 0) {
-          return res.status(400).json({ message: "The Excel file is empty" })
+        const data = xlsx.utils.sheet_to_json(sheet, { defval: null })
+        // console.log('data',data)
+        if (data.length < 2) {
+          fs.unlinkSync(filePath)
+          return res.status(400).json({
+            message:
+              "The Excel file must have at least 2 rows (headers and credits)",
+          })
+        }
+        // Extract headers from the first row
+        const headers = Object.keys(data[0])
+        // Extract credits from the second row
+        const creditsRow = data[0] // Assume second row contains credits
+        const subjectCredits = {}
+        for (const key in creditsRow) {
+          if (
+            key !== "Student ID" &&
+            key !== "Name" &&
+            key !== "Roll" &&
+            key !== "Reg No." &&
+            key !== "Session" &&
+            key !== "Year" &&
+            key !== "Semester No"
+          ) {
+            subjectCredits[key.trim()] = creditsRow[key]
+          }
         }
 
+        // console.log("Subject to Credits Mapping:", subjectCredits)
+
         const students = []
-        for (let row of data) {
+        for (let i = 1; i < data.length; i++) {
+          const row = data[i]
+          
+          // console.log("row", row)
           const {
             "Student ID": studentId,
             Name: name,
@@ -58,6 +85,7 @@ export const importStudentsFromExcel = async (req, res) => {
             Session: session,
             Year: year,
             "Semester No": semester,
+            ...subjectMarks
           } = row
 
           if (
@@ -77,26 +105,21 @@ export const importStudentsFromExcel = async (req, res) => {
           }
 
           const results = []
-          for (let key in row) {
-            if (
-              key !== "Student ID" &&
-              key !== "Name" &&
-              key !== "Roll" &&
-              key !== "Reg No." &&
-              key !== "Session" &&
-              key !== "Year" &&
-              key !== "Semester No"
-            ) {
-              const mark = row[key]
-              if (typeof mark !== "number" || mark < 0 || mark > 100) {
-                return res.status(400).json({
-                  message: `Invalid mark (${mark}) for subject ${key} in row`,
-                  row,
-                })
-              }
-              results.push({ subject: key.trim(), mark }) // Normalize subject names
-            }
-          }
+           for (const subject in subjectMarks) {
+            
+             if (subject.endsWith("__EMPTY") || subjectMarks[subject] === null) {
+    continue; // Skip empty or null keys
+  }
+
+             const mark = subjectMarks[subject]
+             if (typeof mark === "number" && mark >= 0 && mark <= 100) {
+               results.push({
+                 subject: subject.trim(),
+                 mark,
+                 credit: subjectCredits[subject.trim()] || null, // Include credit
+               })
+             }
+           }
 
           const existingStudent = await Student.findOne({ studentId })
           if (existingStudent) {
@@ -111,6 +134,8 @@ export const importStudentsFromExcel = async (req, res) => {
                 )
                 if (existingSubject) {
                   existingSubject.mark = result.mark // Update marks
+                  existingSubject.credit =
+                    subjectCredits[result.subject] || null // Update credit
                 } else {
                   existingSemester.results.push(result) // Add new subjects
                 }
@@ -160,7 +185,7 @@ export const importStudentsFromExcel = async (req, res) => {
         })
       } catch (error) {
         fs.unlinkSync(filePath)
-        console.error("Error processing Excel file:", error)
+        // console.error("Error processing Excel file:", error)
         res.status(500).json({
           message: "Error processing Excel file",
           error: error.message,
@@ -169,7 +194,7 @@ export const importStudentsFromExcel = async (req, res) => {
     })
   } catch (error) {
         fs.unlinkSync(filePath)
-    console.error("Error importing students:", error)
+    // console.error("Error importing students:", error)
     res.status(500).json({
       message: "Error importing students",
       error: error.message,
@@ -209,7 +234,7 @@ export const getStudentByIdAndSemester = async (req, res) => {
       semester: semesterDetails,
     });
   } catch (error) {
-    console.error("Error retrieving student data:", error);
+    // console.error("Error retrieving student data:", error);
     res.status(500).json({
       message: "Error retrieving student data",
       error: error.message,
@@ -238,61 +263,82 @@ export const checkStudentExist = async (req, res) => {
 
 // Function to update marks for a specific student and semester
 export const updateMarksForSemester = async (req, res) => {
-  const { studentId, semester } = req.params;
-  const { marks } = req.body.results; // The marks will be passed in the body
+  const { studentId, semester } = req.params
+  const { results } = req.body // Assuming results will contain both marks and credits
 
   try {
-    // Validate if marks are provided in the body
-    if (!marks || typeof marks !== "object" || Object.keys(marks).length === 0) {
-      return res.status(400).json({ message: "Marks must be provided for subjects." });
+    // Validate if marks and credits are provided in the body
+    if (
+      !results ||
+      typeof results !== "object" ||
+      Object.keys(results).length === 0
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Marks and credits must be provided for subjects." })
     }
 
     // Find the student by studentId
-    const student = await Student.findOne({ studentId });
+    const student = await Student.findOne({ studentId })
 
     // If the student doesn't exist
     if (!student) {
-      return res.status(404).json({ message: "Student not found." });
+      return res.status(404).json({ message: "Student not found." })
     }
 
     // Find the semester in the student's semesters array
-    const semesterIndex = student.semesters.findIndex((sem) => sem.semester === semester);
+    const semesterIndex = student.semesters.findIndex(
+      (sem) => sem.semester === semester
+    )
 
     // If the semester doesn't exist
     if (semesterIndex === -1) {
-      return res.status(404).json({ message: `Semester ${semester} not found for student ${studentId}` });
+      return res
+        .status(404)
+        .json({
+          message: `Semester ${semester} not found for student ${studentId}`,
+        })
     }
 
     // Get the semester object
-    const studentSemester = student.semesters[semesterIndex];
+    const studentSemester = student.semesters[semesterIndex]
 
-    // Update the marks for each subject
-    Object.keys(marks).forEach((subject) => {
-      const subjectIndex = studentSemester.results.findIndex((result) => result.subject === subject);
-      
-      // If the subject already exists, update its mark
+    // Update the marks and credits for each subject
+    Object.keys(results).forEach((subject) => {
+      const { mark, credit } = results[subject] // Destructure mark and credit
+      const subjectIndex = studentSemester.results.findIndex(
+        (result) => result.subject === subject
+      )
+
+      // If the subject already exists, update its mark and credit
       if (subjectIndex !== -1) {
-        studentSemester.results[subjectIndex].mark = marks[subject];
+        studentSemester.results[subjectIndex].mark = mark
+        studentSemester.results[subjectIndex].credit = credit
       } else {
-        // If subject doesn't exist, add it to the results
-        studentSemester.results.push({ subject, mark: marks[subject] });
+        // If subject doesn't exist, add it to the results with mark and credit
+        studentSemester.results.push({ subject, mark, credit })
       }
-    });
+    })
 
     // Save the updated student record
-    await student.save();
+    await student.save()
 
     res.status(200).json({
-      message: "Marks updated successfully",
+      message: "Marks and credits updated successfully",
       updatedStudent: student.semesters.find(
         (sem) => sem.semester === semester
       ),
     })
   } catch (error) {
-    console.error("Error updating marks:", error);
-    res.status(500).json({ message: "Error updating marks", error: error.message });
+    res
+      .status(500)
+      .json({
+        message: "Error updating marks and credits",
+        error: error.message,
+      })
   }
-};
+}
+
 
 // Get top student for a specific semester
 export const getTopStudentForSemester = async (req, res) => {
@@ -353,7 +399,7 @@ export const getTopStudentForSemester = async (req, res) => {
       })
     }
   } catch (error) {
-    console.error("Error fetching top student for semester:", error)
+    // console.error("Error fetching top student for semester:", error)
     res.status(500).json({
       message: "Error fetching top student for semester",
       error: error.message,
