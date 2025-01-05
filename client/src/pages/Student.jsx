@@ -72,7 +72,13 @@ const generatePDF = () => {
   doc.addImage(logo, "PNG", marginLeft, currentY, 20, 20)
 
   // Function to check if content overflows and add a new page if necessary
-  
+  const checkAndAddPage = () => {
+  if (currentY > 270) {
+    // If the current Y exceeds the page height minus margin
+    doc.addPage() // Add a new page
+    currentY = 20 // Reset Y position for the new page
+  }
+  }
 
   // Header Section
   doc.setFont("helvetica", "bold")
@@ -86,6 +92,7 @@ const generatePDF = () => {
     "center"
   )
   currentY += 30
+  checkAndAddPage()
   doc.text("AICTE APPROVED", 105, currentY, "center")
   doc.line(20, currentY + 5, 190, currentY + 5)
   currentY += 15
@@ -256,7 +263,7 @@ checkAndAddPage()
     })
 
     currentY = doc.lastAutoTable.finalY + 10
-
+checkAndAddPage()
     // Summary below table
     const leftColumnX = marginLeft // X-coordinate for the left column
     const rightColumnX = 120 // X-coordinate for the right column
@@ -297,7 +304,7 @@ checkAndAddPage()
   } else {
     doc.text("No results available.", marginLeft, currentY)
   }
-
+checkAndAddPage()
   // Footer Section
   currentY += 20
   const currentDate = new Date().toLocaleDateString("en-GB") // Format: DD/MM/YYYY
@@ -309,7 +316,7 @@ checkAndAddPage()
   doc.text("Verified by:", marginLeft, currentY)
   doc.text("Teacher-in-Charge", marginLeft, currentY + 10)
   doc.text("Controller of Examinations", marginLeft, currentY + 20)
-
+checkAndAddPage()
   // Second column
   doc.text("Chief Controller of Examinations", 140, currentY)
 
