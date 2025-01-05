@@ -304,12 +304,16 @@ checkAndAddPage()
   const currentDate = new Date().toLocaleDateString("en-GB") // Format: DD/MM/YYYY
   doc.text(`Published On: ${currentDate}`, marginLeft, currentY)
   currentY += 20
-  doc.setFontSize(10)
+  doc.setFontSize(12)
 
   // First column
   doc.text("Verified by:", marginLeft, currentY)
+  doc.setFontSize(12)
   doc.text("Teacher-in-Charge", marginLeft, currentY + 10)
+  doc.setFontSize(12)
   doc.text("Controller of Examinations", marginLeft, currentY + 20)
+  doc.setFontSize(12)
+
 checkAndAddPage()
   // Second column
   doc.text("Chief Controller of Examinations", 140, currentY)
