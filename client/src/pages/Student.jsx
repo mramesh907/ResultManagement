@@ -72,13 +72,7 @@ const generatePDF = () => {
   doc.addImage(logo, "PNG", marginLeft, currentY, 20, 20)
 
   // Function to check if content overflows and add a new page if necessary
-  const checkAndAddPage = () => {
-  if (currentY > 270) {
-    // If the current Y exceeds the page height minus margin
-    doc.addPage() // Add a new page
-    currentY = 20 // Reset Y position for the new page
-  }
-  }
+  
 
   // Header Section
   doc.setFont("helvetica", "bold")
