@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react"
 import { NavLink, useLocation } from "react-router-dom"
+import {toast} from "react-hot-toast"
 import { FaHome, FaUser, FaBars, FaTimes } from "react-icons/fa" // Importing icons
 import { RiAdminFill } from "react-icons/ri"
 import logo from "../assets/Midnapore_College_logo.png"
@@ -7,6 +8,24 @@ import logo from "../assets/Midnapore_College_logo.png"
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const location = useLocation() // Hook to access the current location (URL)
+
+  // Function to display greeting toast
+  const showGreeting = () => {
+    toast.dismiss() // Dismiss any existing toasts
+    const currentHour = new Date().getHours()
+    if (currentHour < 12) {
+      toast.success("Good Morning!") // Display "Good Morning" toast
+    } else if (currentHour < 18) {
+      toast.success("Good Afternoon!") // Display "Good Afternoon" toast
+    } else {
+      toast.success("Good Evening!") // Display "Good Evening" toast
+    }
+  }
+
+  // Show greeting when the component mounts (first render)
+  useEffect(() => {
+    showGreeting()
+  }, [])
 
   // Toggle the mobile menu
   const toggleMenu = () => {
