@@ -1,6 +1,6 @@
 ### **1. Abstract**  
 The Result Management System is a web-based application designed to streamline the process of storing, managing, and generating student results. This system provides a secure, efficient, and user-friendly interface for administrators to upload marks and for students to view their results. Using modern web technologies like React, Node.js, and MongoDB, the system ensures accuracy, automation, and scalability, eliminating manual errors and inefficiencies in traditional result management.  
-
+ 
 ---
 
 ### **2. Introduction**  
