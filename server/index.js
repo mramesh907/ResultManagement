@@ -9,12 +9,28 @@ import studentRoutes from "./routes/student.route.js"
 import authRouters from "./routes/auth.route.js"
 
 const app = express()
+
+// CORS configuration for all routes
+const corsOptions = {
+  origin:
+    process.env.FRONTEND_URL || "https://result-management-pq7v.vercel.app", // Allow frontend URL
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allow methods
+  allowedHeaders: ["Content-Type"], // Allow content-type header for non-login routes
+  credentials: true, // Allow credentials
+}
+
+// Apply CORS middleware globally
+app.use(cors(corsOptions))
+
+// CORS configuration for login route where Authorization header is required
 app.use(
+  "/api/auth/signin",
   cors({
+    origin:
+      process.env.FRONTEND_URL || "https://result-management-pq7v.vercel.app",
+    methods: ["POST"],
+    allowedHeaders: ["Content-Type", "Authorization"], // Allow Authorization header only for this route
     credentials: true,
-    origin: process.env.FRONTEND_URL, // Allow all origins temporarily
-    allowedHeaders: ["Content-Type", "Authorization"],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   })
 )
 
@@ -33,6 +49,7 @@ app.get("/", (req, res) => {
     message: "Welcome to the Student Management System",
   })
 })
+
 app.use("/api/auth", authRouters)
 app.use("/api/students", studentRoutes)
 
