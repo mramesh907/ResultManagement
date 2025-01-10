@@ -35,9 +35,16 @@ export const signup = async (req, res) => {
 
 // Sign-in Route (Login)
 export const signin = async (req, res) => {
-  const { email, password } = req.body
-
+ 
   try {
+     const { email, password } = req.body
+     if (!email || !password) {
+       return res.status(400).json({
+         message: "Email and password are required",
+         error: true,
+         success: false,
+       })
+     }
     const user = await User.findOne({ email })
 
     if (!user) {

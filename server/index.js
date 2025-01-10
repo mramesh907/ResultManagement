@@ -12,11 +12,12 @@ const app = express()
 app.use(
   cors({
     credentials: true,
-    // origin: "*",
-    origin:
-      process.env.FRONTEND_URL || "https://result-management-pq7v.vercel.app",
+    origin: process.env.FRONTEND_URL, // Allow all origins temporarily
+    allowedHeaders: ["Content-Type", "Authorization"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   })
 )
+
 app.use(express.json())
 app.use(
   helmet({
