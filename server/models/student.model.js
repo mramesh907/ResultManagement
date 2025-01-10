@@ -20,11 +20,11 @@ const studentSchema = new mongoose.Schema(
             subject: { type: String, required: true }, // Subject name
             mark: { type: Number, required: true, min: 0, max: 100 }, // Marks for the subject (0-100)
             credit: { type: Number, required: false, min: 0 },
-            course: { type: String, required: true }, // e.g., DSC, SEC
-            paper: { type: String, required: true }, // e.g., BCA, NUTRITION & HEALTH
-            paper: { type: String, required: true }, // e.g., BCADSC-101 (Programming in C)
-            type: { type: String, required: true }, // e.g., Th, Th/Proj
-            maxMarks: { type: Number, required: true }, // e.g., 50
+            // course: { type: String, required: true }, // e.g., DSC, SEC
+            // paper: { type: String, required: true }, // e.g., BCA, NUTRITION & HEALTH
+            // paper: { type: String, required: true }, // e.g., BCADSC-101 (Programming in C)
+            // type: { type: String, required: true }, // e.g., Th, Th/Proj
+            // maxMarks: { type: Number, required: true }, // e.g., 50
           },
         ],
       },
