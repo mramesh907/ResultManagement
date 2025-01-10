@@ -17,7 +17,7 @@ const apiRequest = async (url, method, data = null) => {
       },
       withCredentials: true,
     })
-
+    console.log("API Response:", response.data)
     return response.data // Return the response data
   } catch (error) {
     console.error("API Request Error:", error)
