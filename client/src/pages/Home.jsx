@@ -6,10 +6,10 @@ import banner3 from "../assets/banner3.png"
 import banner4 from "../assets/banner4.png"
 import banner5 from "../assets/banner5.png"
 import myPhoto from "../assets/myPhoto.png"
-import { FcPrevious, FcNext } from "react-icons/fc"  // Import the icons
+import { FcPrevious, FcNext } from "react-icons/fc" // Import the icons
 // Import Slick Carousel styles
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
+import "slick-carousel/slick/slick.css"
+import "slick-carousel/slick/slick-theme.css"
 
 const bannerImages = [banner1, banner2, banner3, banner4, banner5]
 
@@ -41,7 +41,7 @@ const Home = () => {
 
   return (
     <div className="home relative">
-       <div className="relative overflow-hidden">
+      <div className="relative overflow-hidden">
         <Slider ref={sliderRef} {...sliderSettings}>
           {bannerImages.map((image, index) => (
             <div key={index}>

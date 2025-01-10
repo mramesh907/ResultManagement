@@ -6,8 +6,8 @@ import { fileURLToPath } from "url"
 // import upload from "../config/upload.js"
 
 // Get the current directory path
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 // Function to import students from an Excel file
 export const importStudentsFromExcel = async (req, res) => {
@@ -27,9 +27,8 @@ export const importStudentsFromExcel = async (req, res) => {
     const tempDir =
       process.env.NODE_ENV === "production"
         ? "/tmp"
-        : path.join(__dirname,'..', "uploads")
+        : path.join(__dirname, "..", "uploads")
     const filePath = path.join(tempDir, file.name)
-
 
     file.mv(filePath, async (err) => {
       if (err) {
@@ -75,7 +74,7 @@ export const importStudentsFromExcel = async (req, res) => {
         const students = []
         for (let i = 1; i < data.length; i++) {
           const row = data[i]
-          
+
           // console.log("row", row)
           const {
             "Student ID": studentId,
@@ -105,21 +104,20 @@ export const importStudentsFromExcel = async (req, res) => {
           }
 
           const results = []
-           for (const subject in subjectMarks) {
-            
-             if (subject.endsWith("__EMPTY") || subjectMarks[subject] === null) {
-    continue; // Skip empty or null keys
-  }
+          for (const subject in subjectMarks) {
+            if (subject.endsWith("__EMPTY") || subjectMarks[subject] === null) {
+              continue // Skip empty or null keys
+            }
 
-             const mark = subjectMarks[subject]
-             if (typeof mark === "number" && mark >= 0 && mark <= 100) {
-               results.push({
-                 subject: subject.trim(),
-                 mark,
-                 credit: subjectCredits[subject.trim()] || null, // Include credit
-               })
-             }
-           }
+            const mark = subjectMarks[subject]
+            if (typeof mark === "number" && mark >= 0 && mark <= 100) {
+              results.push({
+                subject: subject.trim(),
+                mark,
+                credit: subjectCredits[subject.trim()] || null, // Include credit
+              })
+            }
+          }
 
           const existingStudent = await Student.findOne({ studentId })
           if (existingStudent) {
@@ -193,7 +191,7 @@ export const importStudentsFromExcel = async (req, res) => {
       }
     })
   } catch (error) {
-        fs.unlinkSync(filePath)
+    fs.unlinkSync(filePath)
     // console.error("Error importing students:", error)
     res.status(500).json({
       message: "Error importing students",
@@ -204,25 +202,25 @@ export const importStudentsFromExcel = async (req, res) => {
 
 // Get student details by student ID and semester number
 export const getStudentByIdAndSemester = async (req, res) => {
-  const { studentId, semester } = req.params; // Extract studentId and semester from the request parameters
+  const { studentId, semester } = req.params // Extract studentId and semester from the request parameters
 
   try {
     // Find student by studentId and filter for the specific semester
     const student = await Student.findOne({
       studentId,
       "semesters.semester": semester, // Check if the semester exists in the student's semesters array
-    });
+    })
 
     if (!student) {
       return res.status(404).json({
         message: `Student with ID ${studentId} not found or semester ${semester} not found`,
-      });
+      })
     }
 
     // Find the semester details inside the student's semesters array
     const semesterDetails = student.semesters.find(
       (sem) => sem.semester === semester
-    );
+    )
 
     res.status(200).json({
       studentId: student.studentId,
@@ -232,13 +230,13 @@ export const getStudentByIdAndSemester = async (req, res) => {
       session: student.session,
       year: student.year,
       semester: semesterDetails,
-    });
+    })
   } catch (error) {
     // console.error("Error retrieving student data:", error);
     res.status(500).json({
       message: "Error retrieving student data",
       error: error.message,
-    });
+    })
   }
 }
 
@@ -297,7 +295,7 @@ export const updateMarksForSemester = async (req, res) => {
         semester: semester,
         results: [], // New semester with empty results
       })
-      semesterIndex = student.semesters.length - 1 
+      semesterIndex = student.semesters.length - 1
     }
 
     // Get the semester object
@@ -330,15 +328,12 @@ export const updateMarksForSemester = async (req, res) => {
       ),
     })
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Error updating marks and credits",
-        error: error.message,
-      })
+    res.status(500).json({
+      message: "Error updating marks and credits",
+      error: error.message,
+    })
   }
 }
-
 
 // Get top student for a specific semester
 export const getTopStudentForSemester = async (req, res) => {
@@ -406,7 +401,6 @@ export const getTopStudentForSemester = async (req, res) => {
     })
   }
 }
-
 
 // Get top rankers
 export const getTopRankers = async (req, res) => {

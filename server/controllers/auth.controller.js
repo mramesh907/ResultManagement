@@ -2,8 +2,6 @@ import bcryptjs from "bcryptjs"
 import jwt from "jsonwebtoken"
 import User from "../models/user.model.js" // Import the User model
 
-
-
 export const signup = async (req, res) => {
   const { email, password } = req.body
   console.log("Received email:", email)
@@ -37,33 +35,30 @@ export const signup = async (req, res) => {
 
 // Sign-in Route (Login)
 export const signin = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password } = req.body
 
   try {
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email })
 
     if (!user) {
-      return res.status(401).json({ message: "Invalid email or password" });
+      return res.status(401).json({ message: "Invalid email or password" })
     }
 
-    const isMatch = await bcryptjs.compare(password, user.password);
+    const isMatch = await bcryptjs.compare(password, user.password)
 
     if (!isMatch) {
-      return res.status(401).json({ message: "Invalid email or password" });
+      return res.status(401).json({ message: "Invalid email or password" })
     }
 
     const token = jwt.sign(
       { userId: user._id, email: user.email },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
-    );
+    )
 
-    res.status(200).json({ message: "Sign in successful", token });
+    res.status(200).json({ message: "Sign in successful", token })
   } catch (err) {
-    console.error("Error signing in:", err);
-    res.status(500).json({ message: "Server error" });
+    console.error("Error signing in:", err)
+    res.status(500).json({ message: "Server error" })
   }
-};
-
-
-
+}

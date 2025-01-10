@@ -112,13 +112,13 @@ const generatePDF = (semesterData, useCGPA) => {
         gradePoints = 0
       }
       const creditPoint = (result.credit || 0) * gradePoints
-      let course,subject,type,maxmarks
-      if(result.subject==='C++'){
+      let course, subject, type, maxmarks
+      if (result.subject === "C++") {
         course = "DSC"
         subject = "BCA"
         type = "Th"
         maxmarks = 50
-        console.log(course,subject,type,maxmarks)
+        console.log(course, subject, type, maxmarks)
       }
       return [
         result.subject || "N/A",

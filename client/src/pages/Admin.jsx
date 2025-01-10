@@ -33,7 +33,6 @@ const Admin = () => {
     })
   }
 
-
   // Handle Signup
   //  const handleSignup = async (e) => {
   //    e.preventDefault()
@@ -51,21 +50,21 @@ const Admin = () => {
   //  }
 
   // Handle login
- const handleLogin = async (e) => {
-   e.preventDefault()  
-   try {
-     const response = await SummaryApi.signin(email, password)
+  const handleLogin = async (e) => {
+    e.preventDefault()
+    try {
+      const response = await SummaryApi.signin(email, password)
 
-     if (response.token) {
-       localStorage.setItem("token", response.token) // Store the token in localStorage
-       setIsAuthenticated(true)
-       console.log("Login successful:", response.message)
-     }
-   } catch (error) {
-     toast.error("Login failed. Please check your credentials.")
-    //  console.error("Login failed:", error)
-   }
- }
+      if (response.token) {
+        localStorage.setItem("token", response.token) // Store the token in localStorage
+        setIsAuthenticated(true)
+        console.log("Login successful:", response.message)
+      }
+    } catch (error) {
+      toast.error("Login failed. Please check your credentials.")
+      //  console.error("Login failed:", error)
+    }
+  }
   // Handle logout
   const handleLogout = () => {
     localStorage.removeItem("token")
@@ -309,14 +308,14 @@ const Admin = () => {
           {/* File Upload Section */}
           <div className="mb-6">
             <p className="text-xl font-bold mb-4">Upload Students Excel</p>
-               {/* Button to Download Demo Excel File */}
-<a
-  href="https://drive.google.com/uc?export=download&id=1t-58BXVckDTzlkonGb5zQ3Ow1bYcKCJg"
-  download
-  className="bg-green-500 text-white p-2 text-sm rounded hover:bg-green-600 w-full mb-4 inline-block text-center"
->
-  Download Demo Excel File
-</a>
+            {/* Button to Download Demo Excel File */}
+            <a
+              href="https://drive.google.com/uc?export=download&id=1t-58BXVckDTzlkonGb5zQ3Ow1bYcKCJg"
+              download
+              className="bg-green-500 text-white p-2 text-sm rounded hover:bg-green-600 w-full mb-4 inline-block text-center"
+            >
+              Download Demo Excel File
+            </a>
             <input
               type="file"
               onChange={handleFileChange}
