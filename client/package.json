@@ -12,8 +12,10 @@
   "dependencies": {
     "@react-pdf/renderer": "^4.1.6",
     "axios": "^1.7.9",
+    "jsonwebtoken": "^9.0.2",
     "jspdf": "^2.5.2",
     "jspdf-autotable": "^3.8.4",
+    "jwt-decode": "^4.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hot-toast": "^2.4.1",

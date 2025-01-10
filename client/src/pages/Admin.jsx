@@ -6,7 +6,9 @@ const Admin = () => {
   // State for email and password authentication
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    !!localStorage.getItem("token")
+  )
 
   const [file, setFile] = useState(null)
   const [marks, setMarks] = useState({})
@@ -21,6 +23,7 @@ const Admin = () => {
   })
   const [uploading, setUploading] = useState(false)
   const [topStudent, setTopStudent] = useState(null) // State for the top student in the selected semester
+  const [topRankers, setTopRankers] = useState([]) // State to store top rankers
   const [credits, setCredits] = useState({}) // New state for credits
   // Function to handle credit input change
   const handleCreditChange = (e) => {
@@ -29,27 +32,48 @@ const Admin = () => {
       [e.target.name]: e.target.value,
     })
   }
-  
-  // Handle login
-  const handleLogin = (e) => {
-    e.preventDefault()
-    // Hard-coded credentials (You can replace with API for real authentication)
-    const validEmail1 = "maityramesh907@gmail.com"
-    const validPassword1 = "admin123"
-    const validEmail2 = "krishnagopal.dhal@midnaporecollege.ac.in"
-    const validPassword2 = "admin123"
 
-    if (
-      (email === validEmail1 && password === validPassword1) ||
-      (email === validEmail2 && password === validPassword2)
-    ) {
-      setIsAuthenticated(true)
-      toast.success("Login successful!")
-    } else {
-      toast.error("Invalid email or password")
-    }
+
+  // Handle Signup
+  //  const handleSignup = async (e) => {
+  //    e.preventDefault()
+  //    try {
+  //      const response = await SummaryApi.signUp({ email, password })
+  //      if (response.data.message) {
+  //        toast.success("Signup successful! You can now log in.")
+  //        setEmail("")
+  //        setPassword("")
+  //      }
+  //    } catch (err) {
+  //      console.error(err)
+  //      toast.error(err.response?.data?.message || "Signup failed.")
+  //    }
+  //  }
+
+  // Handle login
+ const handleLogin = async (e) => {
+   e.preventDefault()  
+   try {
+     const response = await SummaryApi.signin(email, password)
+
+     if (response.token) {
+       localStorage.setItem("token", response.token) // Store the token in localStorage
+       setIsAuthenticated(true)
+       console.log("Login successful:", response.message)
+     }
+   } catch (error) {
+     toast.error("Login failed. Please check your credentials.")
+    //  console.error("Login failed:", error)
+   }
+ }
+  // Handle logout
+  const handleLogout = () => {
+    localStorage.removeItem("token")
+    setIsAuthenticated(false)
+    toast.success("Logged out successfully!")
   }
 
+  // Handle file change
   const handleFileChange = (e) => {
     setFile(e.target.files[0])
   }
@@ -145,7 +169,6 @@ const Admin = () => {
     const marksData = {
       results: resultsData,
     }
-   
 
     try {
       await SummaryApi.updateStudentResults(studentId, semester, marksData)
@@ -200,42 +223,88 @@ const Admin = () => {
     }
   }
 
+  // Fetch top 5 rankers across all semesters
+  const getTopRankers = async () => {
+    try {
+      const response = await SummaryApi.getTopRankers() // Assume this calls your backend
+      if (response && response.rankers) {
+        setTopRankers(response.rankers)
+        toast.success("Top 5 rankers fetched successfully!")
+      } else {
+        setTopRankers([])
+        toast.error("No rankers found.")
+      }
+    } catch (error) {
+      toast.error("Error fetching top rankers.")
+    }
+  }
+
   return (
     <div className="p-6">
       {!isAuthenticated ? (
         <div>
+          <h2 className="text-2xl font-bold mb-4">Admin Authentication</h2>
+
           {/* Login Form */}
-          <h2 className="text-2xl font-bold mb-4">Admin Login</h2>
           <form onSubmit={handleLogin} className="mb-6">
-            <div className="mb-4">
-              <input
-                type="email"
-                placeholder="Enter Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="p-2 text-sm border border-gray-300 rounded w-full focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div className="mb-4">
-              <input
-                type="password"
-                placeholder="Enter Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="p-2 text-sm border border-gray-300 rounded w-full focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+            <input
+              type="email"
+              placeholder="Enter Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="p-2 text-sm border border-gray-300 rounded w-full"
+            />
+            <input
+              type="password"
+              placeholder="Enter Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="p-2 text-sm border border-gray-300 rounded w-full mt-4"
+            />
             <button
               type="submit"
-              className="bg-blue-500 text-white p-2 text-sm rounded hover:bg-blue-600 w-full"
+              className="bg-blue-500 text-white p-2 text-sm rounded hover:bg-blue-600 w-full mt-4"
             >
               Login
             </button>
           </form>
+
+          {/* Signup Section */}
+          {/* <h3 className="text-lg mb-4">Don't have an account? Sign up!</h3>
+          <form onSubmit={handleSignup}>
+            <input
+              type="email"
+              placeholder="Enter Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="p-2 text-sm border border-gray-300 rounded w-full"
+            />
+            <input
+              type="password"
+              placeholder="Enter Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="p-2 text-sm border border-gray-300 rounded w-full mt-4"
+            />
+            <button
+              type="submit"
+              className="bg-green-500 text-white p-2 text-sm rounded hover:bg-green-600 w-full mt-4"
+            >
+              Signup
+            </button> 
+          </form>*/}
         </div>
       ) : (
         <div>
           <h2 className="text-2xl font-bold mb-4">Admin Panel</h2>
+          <div className="relative">
+            <button
+              onClick={handleLogout}
+              className="bg-red-500 text-white p-2 text-sm rounded hover:bg-red-600 w-24 absolute top-0 right-0"
+            >
+              Logout
+            </button>
+          </div>
 
           {/* File Upload Section */}
           <div className="mb-6">
@@ -418,6 +487,39 @@ const Admin = () => {
                 </ul>
               </div>
             )}
+            {/* Top Rankers Section */}
+            <div className="mt-8">
+              <h3 className="text-xl font-semibold mb-4">Top 5 Rankers</h3>
+
+              {/* Button to Fetch Top Rankers */}
+              <button
+                onClick={getTopRankers}
+                className="bg-blue-500 text-white p-2 text-sm rounded hover:bg-blue-600 w-full"
+              >
+                Get Top 5 Rankers
+              </button>
+
+              {/* Display Top Rankers */}
+              {topRankers.length > 0 && (
+                <div className="mt-4 p-4 bg-gray-100 border rounded-md">
+                  <h4 className="font-semibold mb-2">Top Rankers:</h4>
+                  <ol className="list-decimal ml-6 space-y-2">
+                    {topRankers.map((ranker, index) => (
+                      <li key={index} className="text-sm text-gray-700">
+                        <strong>Name:</strong> {ranker.name} <br />
+                        <strong>Student ID:</strong> {ranker.studentId} <br />
+                        <strong>Total Marks:</strong> {ranker.totalMarks} <br />
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              )}
+
+              {/* No Rankers Found */}
+              {topRankers.length === 0 && (
+                <p className="text-gray-600 mt-4">No rankers available.</p>
+              )}
+            </div>
           </div>
         </div>
       )}

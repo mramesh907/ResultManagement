@@ -1,6 +1,7 @@
 import express from "express"
 import { 
-    checkStudentExist, getStudentByIdAndSemester, getTopStudentForSemester, importStudentsFromExcel, updateMarksForSemester 
+    calculateCGPA,
+    checkStudentExist, getStudentByIdAndSemester, getTopRankers, getTopStudentForSemester, importStudentsFromExcel, updateMarksForSemester 
 } from "../controllers/student.contoller.js" // Import the controller
 // import authenticateToken from "../middlewares/authenticateToken.js"
 const router = express.Router()
@@ -22,8 +23,9 @@ router.get("/checkStudentExist/:studentId", checkStudentExist)
 router.get("/:studentId/semester/:semester",getStudentByIdAndSemester);
 // Define the route to fetch the student with the highest marks for a given semester
 router.get("/topStudentForSemester/:semester", getTopStudentForSemester);
-
-
-
+// Route for fetching top rankers
+router.get("/top-rankers", getTopRankers)
+// Route for calculating CGPA
+router.get("/calculate-cgpa/:studentId/:semester", calculateCGPA)
 
 export default router

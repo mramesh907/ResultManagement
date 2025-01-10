@@ -5,11 +5,18 @@ const baseURL = import.meta.env.VITE_BACKEND_URL // Base URL for the API
 // Utility function for making API requests
 const apiRequest = async (url, method, data = null) => {
   try {
+    // Get the token from localStorage (where it is stored after login)
+    const token = localStorage.getItem("token")
+
     const response = await axios({
       method,
       url: `${baseURL}${url}`,
       data,
+      headers: {
+        Authorization: token ? `Bearer ${token}` : "", // Add the token to the request header
+      },
     })
+
     return response.data // Return the response data
   } catch (error) {
     console.error("API Request Error:", error)
@@ -19,7 +26,10 @@ const apiRequest = async (url, method, data = null) => {
 
 // API Functions for student data operations
 const SummaryApi = {
-  
+  signin: async (email, password) => {
+    return apiRequest("/api/auth/signin", "POST", { email, password })
+  },
+
   // Upload student data
   resultsUpload: async (studentData) => {
     return apiRequest("/api/students/import", "POST", studentData)
@@ -37,11 +47,10 @@ const SummaryApi = {
 
   // Update student results
   updateStudentResults: async (studentId, semester, marksData) => {
-    // We now expect marksData to contain the `results` object already, so we directly send it
     return apiRequest(
       `/api/students/${studentId}/semester/${semester}`,
       "PUT",
-      { results: marksData.results } // Send the `results` part only, which contains the marks
+      { results: marksData.results }
     )
   },
 
@@ -49,9 +58,9 @@ const SummaryApi = {
   getSemesterResults: async (semester) => {
     return apiRequest(`/api/students/topStudentForSemester/${semester}`, "GET")
   },
+
   // Calculate CGPA
   calculateCGPA: async (studentId, semester) => {
-
     return apiRequest(
       `/api/students/calculate-cgpa/${studentId}/${semester}`,
       "GET"
