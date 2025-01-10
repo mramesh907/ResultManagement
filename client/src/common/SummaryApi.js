@@ -15,6 +15,7 @@ const apiRequest = async (url, method, data = null) => {
       headers: {
         Authorization: token ? `Bearer ${token}` : "", // Add the token to the request header
       },
+      withCredentials: true,
     })
 
     return response.data // Return the response data

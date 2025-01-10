@@ -54,7 +54,7 @@ const Admin = () => {
     e.preventDefault()
     try {
       const response = await SummaryApi.signin(email, password)
-
+      console.log('email:', email, 'password:', password)
       if (response.token) {
         localStorage.setItem("token", response.token) // Store the token in localStorage
         setIsAuthenticated(true)
