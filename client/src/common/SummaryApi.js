@@ -26,31 +26,30 @@ const apiRequest = async (url, method, data = null, isSignIn = false) => {
     console.log("API Response:", response.data)
     return response.data // Return the response data
   } catch (error) {
-    console.error("API Request Error:", error)
+    console.error("API Request Error:", error.response || error.message) // Better error logging
     throw error // Re-throw the error to handle it in the component
   }
 }
 
-
 // API Functions for student data operations
 const SummaryApi = {
   signin: async (email, password) => {
-    return apiRequest("/api/auth/signin", "POST", { email, password }, true); // Pass true for signin
+    return apiRequest("/api/auth/signin", "POST", { email, password }, true) // Pass true for signin
   },
 
   // Upload student data
   resultsUpload: async (studentData) => {
-    return apiRequest("/api/students/import", "POST", studentData);
+    return apiRequest("/api/students/import", "POST", studentData)
   },
 
   // Fetch student details based on studentId and semester
   fetchStudentDetails: async (studentId, semester) => {
-    return apiRequest(`/api/students/${studentId}/semester/${semester}`, "GET");
+    return apiRequest(`/api/students/${studentId}/semester/${semester}`, "GET")
   },
 
   // Check if a student exists
   checkStudentExist: async (studentId) => {
-    return apiRequest(`/api/students/checkStudentExist/${studentId}`, "GET");
+    return apiRequest(`/api/students/checkStudentExist/${studentId}`, "GET")
   },
 
   // Update student results
@@ -59,12 +58,12 @@ const SummaryApi = {
       `/api/students/${studentId}/semester/${semester}`,
       "PUT",
       { results: marksData.results }
-    );
+    )
   },
 
   // Get top student for a specific semester
   getSemesterResults: async (semester) => {
-    return apiRequest(`/api/students/topStudentForSemester/${semester}`, "GET");
+    return apiRequest(`/api/students/topStudentForSemester/${semester}`, "GET")
   },
 
   // Calculate CGPA
@@ -72,16 +71,13 @@ const SummaryApi = {
     return apiRequest(
       `/api/students/calculate-cgpa/${studentId}/${semester}`,
       "GET"
-    );
+    )
   },
 
   // Get top rankers
   getTopRankers: async () => {
-    return apiRequest(`/api/students/top-rankers`, "GET");
+    return apiRequest(`/api/students/top-rankers`, "GET")
   },
-};
-
-
-
+}
 
 export default SummaryApi
