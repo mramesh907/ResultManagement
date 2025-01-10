@@ -13,7 +13,8 @@ app.use(
   cors({
     credentials: true,
     // origin: "*",
-    origin: process.env.FRONTEND_URL,
+    origin:
+      process.env.FRONTEND_URL || "https://result-management-pq7v.vercel.app",
   })
 )
 app.use(express.json())
