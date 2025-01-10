@@ -12,15 +12,9 @@ const app = express()
 app.use(
   cors({
     credentials: true,
-    origin: "*",
-    // origin: process.env.FRONTEND_URL,
+    origin: process.env.FRONTEND_URL || "*",
   })
 )
-// Predefined list of authorized email IDs and their passwords
-const allowedUsers = [
-  { email: "maityramesh907@gmail.com", password: "ramesh123" },
-  { email: "krishnagopal.dhal@midnaporecollege.ac.in", password: "mypassword" },
-]
 app.use(express.json())
 app.use(
   helmet({
