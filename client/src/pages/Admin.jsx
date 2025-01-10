@@ -309,7 +309,14 @@ const Admin = () => {
           {/* File Upload Section */}
           <div className="mb-6">
             <p className="text-xl font-bold mb-4">Upload Students Excel</p>
-
+               {/* Button to Download Demo Excel File */}
+<a
+  href="https://drive.google.com/uc?export=download&id=1t-58BXVckDTzlkonGb5zQ3Ow1bYcKCJg"
+  download
+  className="bg-green-500 text-white p-2 text-sm rounded hover:bg-green-600 w-full mb-4 inline-block text-center"
+>
+  Download Demo Excel File
+</a>
             <input
               type="file"
               onChange={handleFileChange}

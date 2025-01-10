@@ -1,15 +1,20 @@
 {
   "version": 2,
-  "name": "Full Stack",
+  "name": "student-management-system",
   "builds": [
     {
-      "src": "./index.js",
+      "src": "index.js",
       "use": "@vercel/node"
     }
   ],
-  "rewrites": [
-        {
-          "source": "/(.*)",
-          "destination": "/"}
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "index.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "index.js"
+    }
   ]
 }
