@@ -19,6 +19,7 @@ const apiRequest = async (url, method, data = null) => {
 
 // API Functions for student data operations
 const SummaryApi = {
+  
   // Upload student data
   resultsUpload: async (studentData) => {
     return apiRequest("/api/students/import", "POST", studentData)
@@ -47,6 +48,19 @@ const SummaryApi = {
   // Get top student for a specific semester
   getSemesterResults: async (semester) => {
     return apiRequest(`/api/students/topStudentForSemester/${semester}`, "GET")
+  },
+  // Calculate CGPA
+  calculateCGPA: async (studentId, semester) => {
+
+    return apiRequest(
+      `/api/students/calculate-cgpa/${studentId}/${semester}`,
+      "GET"
+    )
+  },
+
+  // Get top rankers
+  getTopRankers: async () => {
+    return apiRequest(`/api/students/top-rankers`, "GET")
   },
 }
 
