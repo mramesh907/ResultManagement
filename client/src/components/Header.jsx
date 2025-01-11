@@ -61,7 +61,7 @@ const Header = () => {
 
         {/* Navigation */}
         <nav
-          className={`lg:flex ${isMenuOpen ? "block" : "hidden"} absolute lg:static top-20 left-0 right-0 bg-white lg:bg-transparent lg:flex-row flex-col items-center gap-8 lg:z-auto z-10`}
+          className={`lg:flex ${isMenuOpen ? "block" : "hidden"} absolute lg:static top-20 left-0 right-0 bg-white lg:bg-transparent lg:flex-row flex-col items-center gap-8 lg:z-auto z-10 lg:mr-6`}
         >
           <ul className="flex lg:flex-row flex-col lg:gap-8 gap-4 items-center">
             <li>
