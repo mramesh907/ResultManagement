@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 import { toast } from "react-hot-toast"
 import SummaryApi from "../common/SummaryApi" // Import the SummaryApi
-
+import { FiLogOut } from "react-icons/fi"
 const Admin = () => {
   // State for email and password authentication
   const [email, setEmail] = useState("")
@@ -54,7 +54,7 @@ const Admin = () => {
     e.preventDefault()
     try {
       const response = await SummaryApi.signin(email, password)
-      console.log('email:', email, 'password:', password)
+      console.log("email:", email, "password:", password)
       if (response.token) {
         localStorage.setItem("token", response.token) // Store the token in localStorage
         setIsAuthenticated(true)
@@ -82,6 +82,7 @@ const Admin = () => {
     setSemester(e.target.value)
   }
 
+  // Handle marks change
   const handleMarksChange = (e) => {
     setMarks({
       ...marks,
@@ -89,6 +90,7 @@ const Admin = () => {
     })
   }
 
+  // Handle Add new subject
   const handleAddSubject = () => {
     if (!subject.trim()) {
       toast.error("Subject name cannot be empty!")
@@ -295,15 +297,16 @@ const Admin = () => {
         </div>
       ) : (
         <div>
-          <h2 className="text-2xl font-bold mb-4">Admin Panel</h2>
-          <div className="relative">
+          <h2 className="text-2xl font-bold mb-4 flex justify-between items-center">
+            Admin Panel
             <button
               onClick={handleLogout}
-              className="bg-red-500 text-white p-2 text-sm rounded hover:bg-red-600 w-24 absolute top-0 right-0"
+              className="flex items-center bg-red-500 text-white p-2 text-sm rounded hover:bg-red-600"
             >
+              <FiLogOut className="mr-2" /> {/* Logout icon */}
               Logout
             </button>
-          </div>
+          </h2>
 
           {/* File Upload Section */}
           <div className="mb-6">
@@ -506,7 +509,9 @@ const Admin = () => {
               </button>
 
               {/* Display Top Rankers */}
-              {topRankers.length > 0 && (
+              {topRankers.length === 0 ? (
+                <p className="text-gray-600 mt-4">No rankers available.</p>
+              ) : (
                 <div className="mt-4 p-4 bg-gray-100 border rounded-md">
                   <h4 className="font-semibold mb-2">Top Rankers:</h4>
                   <ol className="list-decimal ml-6 space-y-2">
@@ -520,15 +525,11 @@ const Admin = () => {
                   </ol>
                 </div>
               )}
-
-              {/* No Rankers Found */}
-              {topRankers.length === 0 && (
-                <p className="text-gray-600 mt-4">No rankers available.</p>
-              )}
             </div>
           </div>
         </div>
       )}
+      {/* End of isAuthenticated */}
     </div>
     // End of Container
   )
