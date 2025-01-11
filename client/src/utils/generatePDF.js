@@ -2,7 +2,7 @@ import jsPDF from "jspdf"
 import "jspdf-autotable"
 
 // Function to generate the student data PDF
-const generatePDF = (semesterData, useCGPA) => {
+const generatePDF = (semesterData, useCGPA,preview=false) => {
   if (!semesterData) {
     console.error("No data available to generate PDF.")
     return
@@ -241,7 +241,7 @@ const generatePDF = (semesterData, useCGPA) => {
       currentY
     )
     currentY += rowHeight
-    checkAndAddPage()
+    currentY=checkAndAddPage(doc, currentY)
     // Row 3: Percentage and Result
     doc.text(`Percentage: ${percentage.toFixed(2)}%`, leftColumnX, currentY)
     doc.text(`Result: ${resultClass}`, rightColumnX, currentY)
@@ -255,19 +255,28 @@ const generatePDF = (semesterData, useCGPA) => {
     doc.text(`Published On: ${currentDate}`, marginLeft, currentY)
     currentY += 20
     doc.setFontSize(12)
+    currentY = checkAndAddPage(doc, currentY)
 
     // Footer Section
     doc.text("Verified by:", marginLeft, currentY)
 
     doc.text("Controller of Examinations", marginLeft, currentY + 20)
+    currentY = checkAndAddPage(doc, currentY)
 
     doc.text("Teacher-in-Charge", 140, currentY)
-    currentY += 20
-    doc.text("Chief Controller of Examinations", 140, currentY)
+     doc.text("Chief Controller of Examinations", 140, currentY+20)
+   
 
-    doc.save(
-      `student_${semesterData.studentId}_semester_${semesterData.semester.semester}.pdf`
-    )
+     if (preview) {
+       const pdfBlob = doc.output("blob") // Generate a Blob
+       const pdfURL = URL.createObjectURL(pdfBlob) // Create a URL for the Blob
+       window.open(pdfURL) // Open in a new tab
+     } else {
+       // Download the PDF directly
+       doc.save(
+         `student_${semesterData.studentId}_semester_${semesterData.semester.semester}.pdf`
+       )
+     }
   }
 }
 export default generatePDF

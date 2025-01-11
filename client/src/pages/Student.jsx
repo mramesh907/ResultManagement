@@ -87,6 +87,13 @@ const Student = () => {
       {semesterData && semesterData.semester && (
         <div className="mt-4">
           <button
+            onClick={() => generatePDF(semesterData, useCGPA, true)} // Pass `true` to enable preview
+            className="bg-yellow-500 text-white p-2 rounded hover:bg-yellow-600 mr-5"
+          >
+            Preview PDF
+          </button>
+
+          <button
             onClick={() => generatePDF(semesterData, useCGPA)}
             className="bg-green-500 text-white p-2 rounded hover:bg-green-600"
           >
