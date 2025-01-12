@@ -14,17 +14,22 @@ const studentSchema = new mongoose.Schema(
           type: String,
           required: true,
           enum: ["1", "2", "3", "4", "5", "6", "7", "8"],
-        }, // Semester number (e.g., 1, 2, etc.)
+        },
         results: [
           {
             subject: { type: String, required: true }, // Subject name
-            mark: { type: Number, required: true, min: 0, max: 100 }, // Marks for the subject (0-100)
-            credit: { type: Number, required: false, min: 0 },
-            // course: { type: String, required: true }, // e.g., DSC, SEC
-            // paper: { type: String, required: true }, // e.g., BCA, NUTRITION & HEALTH
-            // paper: { type: String, required: true }, // e.g., BCADSC-101 (Programming in C)
-            // type: { type: String, required: true }, // e.g., Th, Th/Proj
-            // maxMarks: { type: Number, required: true }, // e.g., 50
+            course: { type: String, required: true }, // e.g., DSC, SEC
+            paper: { type: String, required: true }, // e.g., BCADSC-101
+            types: [
+              {
+                type: { type: String, required: true }, // e.g., Th, Proj
+                credit: { type: Number, required: false, min: 0 }, // Credit points moved here
+                ciaMarks: { type: Number, required: true, min: 0 }, // Marks in CIA
+                eseMarks: { type: Number, required: true, min: 0 }, // Marks in ESE
+                ciamarksObtained: { type: Number, required: true, min: 0 }, // Total marks (CIA)
+                esemarksObtained: { type: Number, required: true, min: 0 }, // Total marks (ESE)
+              },
+            ], // Array for multiple paper types
           },
         ],
       },

@@ -1,33 +1,33 @@
 import express from "express"
 import {
-  calculateCGPA,
-  checkStudentExist,
-  getStudentByIdAndSemester,
-  getTopRankers,
-  getTopStudentForSemester,
+  addNewStudent,
   importStudentsFromExcel,
   updateMarksForSemester,
+  checkStudentExist,
+  getStudentByIdAndSemester,
+  getTopStudentForSemester,
+  getTopRankers,
+  calculateCGPA,
+  calculateSGPA,
+  calculateCGPASGPA,
+  calculateGPA,
 } from "../controllers/student.contoller.js" // Import the controller
-// import authenticateToken from "../middlewares/authenticateToken.js"
+
 const router = express.Router()
 
-// Protected routes:-
-// Route for importing students from Excel file
-router.post("/import", importStudentsFromExcel)
+// Public routes (unprotected)
+router.get("/checkStudentExist/:studentId", checkStudentExist) // Check if a student exists
+router.get("/:studentId/semester/:semester", getStudentByIdAndSemester) // Fetch student details by student ID and semester
+router.get("/topStudentForSemester/:semester", getTopStudentForSemester) // Get top student for a specific semester
+router.get("/top-rankers", getTopRankers) // Fetch top rankers
+router.get("/calculate-cgpa/:studentId", calculateCGPA) // Calculate CGPA for a student in a specific semester
+router.get("/calculate-sgpa/:studentId", calculateSGPA) // Calculate SGPA for a student in a specific semester
+router.get("/calculate-cgpa-sgpa/:studentId", calculateCGPASGPA) // Calculate SGPA for a student in a specific semester
+router.get("/calculate-gpa/:studentId", calculateGPA) // Calculate SGPA for a student in a specific semester
 
-// Route for updating marks for a specific student and semester
-router.put("/:studentId/semester/:semester", updateMarksForSemester)
-
-// Unprotected routes:-
-// Check if a student exists
-router.get("/checkStudentExist/:studentId", checkStudentExist)
-// Route for fetching student details by student ID and semester
-router.get("/:studentId/semester/:semester", getStudentByIdAndSemester)
-// Define the route to fetch the student with the highest marks for a given semester
-router.get("/topStudentForSemester/:semester", getTopStudentForSemester)
-// Route for fetching top rankers
-router.get("/top-rankers", getTopRankers)
-// Route for calculating CGPA
-router.get("/calculate-cgpa/:studentId/:semester", calculateCGPA)
+// Protected routes (requires authentication or authorization)
+router.post("/add-student", addNewStudent) // Add a new student
+router.post("/import", importStudentsFromExcel) // Import students from an Excel file
+router.post("/update-marks", updateMarksForSemester) // Update marks for a student in a specific semester
 
 export default router

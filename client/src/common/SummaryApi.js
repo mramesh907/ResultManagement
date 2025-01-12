@@ -23,7 +23,7 @@ const apiRequest = async (url, method, data = null, isSignIn = false) => {
       withCredentials: true, // Include credentials (cookies) for cross-origin requests
     })
 
-    console.log("API Response:", response.data)
+    // console.log("API Response:", response.data)
     return response.data // Return the response data
   } catch (error) {
     console.error("API Request Error:", error.response || error.message) // Better error logging
@@ -60,6 +60,11 @@ const SummaryApi = {
       { results: marksData.results }
     )
   },
+  // Update student results for a semester
+  updateMarksForSemester: async (data) => {
+    // console.log('Data in API:',data)
+    return apiRequest("/api/students/update-marks", "POST", data)
+  },
 
   // Get top student for a specific semester
   getSemesterResults: async (semester) => {
@@ -69,7 +74,13 @@ const SummaryApi = {
   // Calculate CGPA
   calculateCGPA: async (studentId, semester) => {
     return apiRequest(
-      `/api/students/calculate-cgpa/${studentId}/${semester}`,
+      `/api/students/calculate-cgpa/${studentId}`,
+      "GET"
+    )
+  },
+  calculateGPA: async (studentId) => {
+    return apiRequest(
+      `/api/students/calculate-gpa/${studentId}`,
       "GET"
     )
   },

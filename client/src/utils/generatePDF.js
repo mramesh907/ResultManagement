@@ -2,7 +2,9 @@ import jsPDF from "jspdf"
 import "jspdf-autotable"
 
 // Function to generate the student data PDF
-const generatePDF = (semesterData, useCGPA,preview=false) => {
+const generatePDF = (semesterData, gpa, preview = false) => {
+  // console.log(gpa)
+
   if (!semesterData) {
     console.error("No data available to generate PDF.")
     return
@@ -10,9 +12,8 @@ const generatePDF = (semesterData, useCGPA,preview=false) => {
 
   const checkAndAddPage = (doc, currentY) => {
     if (currentY > 270) {
-      // If the current Y exceeds the page height minus margin
       doc.addPage() // Add a new page
-      currentY = 20 // Reset Y position for the new page
+      currentY = 20 // Reset Y position
     }
     return currentY
   }
@@ -60,7 +61,7 @@ const generatePDF = (semesterData, useCGPA,preview=false) => {
   )
   currentY += 20
 
-  // Semester Results
+  // Semester Results Header
   doc.setFontSize(16)
   doc.text(
     `Student Results for Semester ${semesterData.semester.semester || "N/A"}`,
@@ -69,23 +70,31 @@ const generatePDF = (semesterData, useCGPA,preview=false) => {
   )
   currentY += 10
 
-  if (
-    semesterData.semester.results &&
-    semesterData.semester.results.length > 0
-  ) {
-    const tableHeaders = [
-      "Paper",
-      "Max Marks",
-      "Marks Obtained",
-      "Grade",
-      "Grade Points",
-      "Credit",
-      "Credit Points",
-    ]
-    const tableData = semesterData.semester.results.map((result) => {
-      const percentage = (result.mark / 100) * 100
-      let grade, gradePoints
+  // Table Data Preparation
+  const tableHeaders = [
+    "Course",
+    "Subject",
+    "Paper",
+    "Th/Pr/Proj",
+    "Max Marks",
+    "Marks Obtained",
+    "Grade",
+    "Grade Points",
+    "Credit",
+    "Credit Points",
+  ]
 
+  const tableData = []
+  // let gradePointsArray = []
+
+  semesterData.semester.results.forEach((result) => {
+    result.types.forEach((type) => {
+      const maxMarks = (type.ciaMarks || 0) + (type.eseMarks || 0)
+      const marksObtained =
+        (type.ciamarksObtained || 0) + (type.esemarksObtained || 0)
+      const percentage = (marksObtained / maxMarks) * 100
+
+      let grade, gradePoints
       if (percentage >= 90) {
         grade = "O"
         gradePoints = 10
@@ -111,172 +120,308 @@ const generatePDF = (semesterData, useCGPA,preview=false) => {
         grade = "F"
         gradePoints = 0
       }
-      const creditPoint = (result.credit || 0) * gradePoints
-      let course, subject, type, maxmarks
-      if (result.subject === "C++") {
-        course = "DSC"
-        subject = "BCA"
-        type = "Th"
-        maxmarks = 50
-        console.log(course, subject, type, maxmarks)
-      }
-      return [
+      const creditPoints = (type.credit || 0) * gradePoints
+
+      tableData.push([
+        result.course || "N/A",
         result.subject || "N/A",
-        "100",
-        result.mark || "N/A",
+        result.paper || "N/A",
+        type.type || "N/A",
+        maxMarks,
+        marksObtained,
         grade,
         gradePoints,
-        result.credit || "N/A",
-        creditPoint.toFixed(2),
+        type.credit || "N/A",
+        creditPoints.toFixed(2),
+      ])
+    })
+  })
+
+  // Calculate Totals
+  const totalCredits = semesterData.semester.results.reduce(
+    (sum, row) =>
+      sum + row.types.reduce((subSum, type) => subSum + (type.credit || 0), 0),
+    0
+  )
+
+  const totalCreditPoints = semesterData.semester.results.reduce((sum, row) => {
+    return (
+      sum +
+      row.types.reduce((subSum, type) => {
+        const maxMarks = (type.ciaMarks || 0) + (type.eseMarks || 0)
+        const marksObtained =
+          (type.ciamarksObtained || 0) + (type.esemarksObtained || 0)
+        const percentage = (marksObtained / maxMarks) * 100
+
+        let gradePoints
+        if (percentage >= 90) {
+          gradePoints = 10
+        } else if (percentage >= 80) {
+          gradePoints = 9
+        } else if (percentage >= 70) {
+          gradePoints = 8
+        } else if (percentage >= 60) {
+          gradePoints = 7
+        } else if (percentage >= 50) {
+          gradePoints = 6
+        } else if (percentage >= 40) {
+          gradePoints = 5
+        } else if (percentage >= 30) {
+          gradePoints = 4
+        } else {
+          gradePoints = 0
+        }
+
+        const creditPoints = (type.credit || 0) * gradePoints
+        return subSum + creditPoints
+      }, 0)
+    )
+  }, 0)
+
+  const sgpa =
+    totalCredits > 0 ? (totalCreditPoints / totalCredits).toFixed(2) : "N/A"
+
+  const totalMarksObtained = semesterData.semester.results.reduce(
+    (sum, row) =>
+      sum +
+      row.types.reduce(
+        (subSum, type) =>
+          subSum + (type.ciamarksObtained || 0) + (type.esemarksObtained || 0),
+        0
+      ),
+    0
+  )
+  const totalFullMarks = semesterData.semester.results.reduce(
+    (sum, row) =>
+      sum +
+      row.types.reduce(
+        (subSum, type) => subSum + (type.ciaMarks || 0) + (type.eseMarks || 0),
+        0
+      ),
+    0
+  )
+  const percentage = (totalMarksObtained / totalFullMarks) * 100
+
+  let resultRemark = "Not Qualified"
+  let resultClass = "Fail"
+  if (percentage >= 50) {
+    resultRemark = "Qualified to the Next Semester"
+    resultClass = percentage >= 60 ? "First Class" : "Second Class"
+  }
+
+  // Add Totals to Table
+  tableData.push([
+    "Total",
+    "",
+    "",
+    "",
+    totalFullMarks,
+    totalMarksObtained,
+    "",
+    "",
+    totalCredits,
+    totalCreditPoints.toFixed(2),
+  ])
+
+  // Add Table to PDF
+  currentY = checkAndAddPage(doc, currentY)
+  doc.autoTable({
+    head: [tableHeaders],
+    body: tableData,
+    startY: currentY,
+    theme: "grid",
+    margin: { left: marginLeft },
+    styles: {
+      fontSize: 12,
+      lineWidth: 0.5, // Border width
+      lineColor: [0, 0, 0], // Border color (black)
+    }, // Decreased font size of headers
+    headStyles: {
+      fontSize: 10,
+      fillColor: [26, 189, 156],
+      textColor: [255, 255, 255],
+      lineWidth: 0.5, // Thicker border for headers
+    },
+    bodyStyles: {
+      fontStyle: "normal", // Normal font for body text
+      textColor: [0, 0, 0],
+    },
+    // willDrawCell: (data) => {
+    //   const { section, column, cell } = data
+
+    //   // Draw vertical borders between header columns, excluding the first and last column
+    //   if (section === "head") {
+    //     const x = cell.x + cell.width // Right edge of the header cell
+    //     const yStart = cell.y // Top of the header cell
+    //     const yEnd = cell.y + cell.height // Bottom of the header cell
+
+    //     // Draw border only if the current column is not the first or last one
+    //     if (column.index !== 0) {
+    //       doc.setLineWidth(0.5) // Border thickness
+    //       doc.setDrawColor(255, 255, 255) // White color for the line
+    //       doc.line(x, yStart, x, yEnd) // Draw the vertical line
+    //     }
+    //   }
+    // },
+  })
+
+  currentY = doc.lastAutoTable.finalY + 10
+
+  // Summary Below the Table
+  const rightColumnX = 120
+  const rowHeight = 10
+
+  // Adjusted Text Alignment
+  doc.text(`Grand Total Credit Points: ${totalCredits}`, marginLeft, currentY)
+  doc.text(`SGPA: ${sgpa}`, marginLeft, currentY + rowHeight)
+  doc.text(
+    `Credit Points: ${totalCreditPoints.toFixed(2)}`,
+    rightColumnX,
+    currentY
+  )
+  // const cgpa = useCGPA || "N/A"
+  // doc.text(`CGPA: ${cgpa}`, rightColumnX, currentY + rowHeight)
+  // currentY += 2 * rowHeight
+
+  // Corrected text alignment for specific sections
+
+  let cgpaforsem
+  const summaryData = gpa.semesters
+    // .filter((result) => result.semester <= semesterData.semester.semester) // Filter semesters based on the current semester
+    .map((result) => {
+      if (result.semester === semesterData.semester.semester) {
+        cgpaforsem = result.cgpa
+      }
+      // Get the YGPA for the corresponding year
+      let ygpa = "N/A"
+      const yearIndex = Math.floor((result.semester - 1) / 2) // Assuming semesters 1-2 are Year 1, 3-4 are Year 2, etc.
+
+      if (yearIndex < gpa.ygpa.length) {
+        ygpa = gpa.ygpa[yearIndex].ygpa || "N/A"
+      }
+      return [
+        result.semester || "N/A",
+        result.sgpa || "N/A",
+        result.cgpa || "N/A",
+        ygpa || "N/A",
+        result.totalCredits || "N/A",
+        result.totalCreditPoints || "N/A",
+        result.maxMarks || "N/A",
+        result.totalMarks || "N/A",
+        result.percentageObtained
+          ? result.percentageObtained.toFixed(2)
+          : "N/A",
       ]
     })
 
-    // Add totals
-    const totalCredits = semesterData.semester.results.reduce(
-      (sum, row) => sum + (row.credit || 0),
-      0
+
+
+
+
+  doc.text(
+    `Grand Total Marks: ${totalFullMarks}`,
+    marginLeft,
+    currentY + rowHeight + 10
+  )
+  doc.text(`CGPA: ${cgpaforsem}`, rightColumnX, currentY + rowHeight)
+  doc.text(
+    `Total Marks Obtained: ${totalMarksObtained}`,
+    rightColumnX,
+    currentY + rowHeight + 10
+  )
+  currentY += 2 * rowHeight // Increased to account for extra spacing
+
+  currentY = checkAndAddPage(doc, currentY)
+
+  doc.text(`Percentage: ${percentage.toFixed(2)}%`, marginLeft, currentY + 10)
+  doc.text(`Result: ${resultClass}`, rightColumnX, currentY + 10)
+  currentY += rowHeight
+
+  doc.text(`Remarks: ${resultRemark}`, marginLeft, currentY + 10)
+  currentY += 20
+
+  const currentDate = new Date().toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  })
+
+  // Summary Table:- Add below the main result table and above the footer
+  const summaryHeaders = [
+    "Semester",
+    "SGPA",
+    "CGPA",
+    "YGPA",
+    "Total Credit",
+    "Total Credit Points",
+    "Max Marks",
+    "Total Marks",
+    "Percentage Obtained",
+  ]
+
+  
+  // Add Summary Table to PDF
+  currentY = checkAndAddPage(doc, currentY)
+  doc.setFontSize(14)
+  currentY += 10
+
+  doc.text("Summary", marginLeft, currentY)
+  currentY += 10
+  currentY = checkAndAddPage(doc, currentY)
+
+  doc.autoTable({
+    head: [summaryHeaders],
+    body: summaryData,
+    startY: currentY,
+    theme: "grid",
+    margin: { left: marginLeft },
+    styles: {
+      fontSize: 12,
+      lineWidth: 0.5,
+      lineColor: [0, 0, 0],
+    },
+    headStyles: {
+      fontSize: 10,
+      fillColor: [26, 189, 156],
+      textColor: [255, 255, 255],
+      lineWidth: 0.5,
+    },
+    bodyStyles: {
+      fontStyle: "normal",
+      textColor: [0, 0, 0],
+    },
+  })
+
+  // Footer: After the table, adjust currentY
+  currentY = doc.lastAutoTable.finalY + 10 // Adjust space after the table
+
+  // Align footer text
+  doc.setFontSize(10)
+  // doc.text(`Result Published Date: ${currentDate}`, marginLeft, currentY)
+  // doc.text(`Date of Printing: ${currentDate}`, rightColumnX, currentY)
+  doc.text(`Date of Printing: ${currentDate}`, marginLeft, currentY)
+  currentY = checkAndAddPage(doc, currentY)
+
+  // Adding Verified by details
+  currentY += 20
+  currentY = checkAndAddPage(doc, currentY)
+
+  doc.text("Verified by:", marginLeft, currentY)
+  doc.text("Controller of Examinations", marginLeft, currentY + 10)
+
+  // Check and add page if necessary
+  currentY = checkAndAddPage(doc, currentY)
+  doc.text("Teacher-in-Charge", 140, currentY)
+  doc.text("Chief Controller of Examinations", 140, currentY + 10)
+  if (preview) {
+    window.open(doc.output("bloburl"))
+  } else {
+    doc.save(
+      `${semesterData.name}_semester_${semesterData.semester.semester}_result.pdf`
     )
-    const totalCreditPoints = semesterData.semester.results.reduce(
-      (sum, row) => sum + (row.credit || 0) * ((row.mark / 100) * 10 || 0),
-      0
-    )
-    const sgpa =
-      totalCredits > 0 ? (totalCreditPoints / totalCredits).toFixed(2) : "N/A"
-    const totalMarksObtained = semesterData.semester.results.reduce(
-      (sum, row) => sum + (parseInt(row.mark) || 0),
-      0
-    )
-    const totalFullMarks = semesterData.semester.results.length * 100
-    const percentage = (totalMarksObtained / totalFullMarks) * 100
-    let resultRemark = "Not Qualified"
-    let resultClass = "Fail"
-
-    if (percentage >= 50) {
-      resultRemark = "Qualified to the Next Semester"
-      resultClass = percentage >= 60 ? "First Class" : "Second Class"
-    }
-
-    tableData.push([
-      "Total",
-      totalFullMarks,
-      totalMarksObtained,
-      "",
-      "",
-      totalCredits,
-      totalCreditPoints.toFixed(2),
-    ])
-
-    currentY = checkAndAddPage(doc, currentY)
-    doc.autoTable({
-      head: [tableHeaders],
-      body: tableData,
-      startY: currentY,
-      theme: "grid",
-      margin: { left: marginLeft },
-      styles: {
-        fontSize: 12,
-        lineWidth: 0.5, // Border width
-        lineColor: [0, 0, 0], // Border color (black)
-      },
-      headStyles: {
-        fillColor: [0, 0, 0],
-        textColor: [255, 255, 255],
-        lineWidth: 1, // Thicker border for headers
-      },
-      bodyStyles: {
-        fontStyle: "normal", // Normal font for body text
-        textColor: [0, 0, 0],
-      },
-      willDrawCell: (data) => {
-        const { section, column, cell } = data
-
-        // Draw vertical borders between header columns, excluding the first and last column
-        if (section === "head") {
-          const x = cell.x + cell.width // Right edge of the header cell
-          const yStart = cell.y // Top of the header cell
-          const yEnd = cell.y + cell.height // Bottom of the header cell
-
-          // Draw border only if the current column is not the first or last one
-          if (
-            column.index !== 0 &&
-            column.index !== data.table.columns.length
-          ) {
-            doc.setLineWidth(0.5) // Border thickness
-            doc.setDrawColor(255, 255, 255) // White color for the line
-            doc.line(x, yStart, x, yEnd) // Draw the vertical line
-          }
-        }
-      },
-    })
-
-    currentY = doc.lastAutoTable.finalY + 10
-    currentY = checkAndAddPage(doc, currentY)
-
-    // Summary below table
-    const leftColumnX = marginLeft
-    const rightColumnX = 120
-    const rowHeight = 10
-
-    // Row 1: Credit, Grand Total Credit Points, and SGPA
-    doc.text(
-      `Grand Total Credit Points: ${totalCredits}`,
-      leftColumnX,
-      currentY
-    )
-    doc.text(
-      `SGPA: ${totalCreditPoints.toFixed(2)}`,
-      leftColumnX,
-      currentY + rowHeight
-    )
-    doc.text(`Credit Points: ${sgpa}`, rightColumnX, currentY)
-    const cgpa = useCGPA || "N/A"
-    doc.text(`CGPA: ${cgpa}`, rightColumnX, currentY + rowHeight)
-    currentY += 2 * rowHeight
-
-    // Row 2: Grand Total Marks and Total Marks Obtained
-    doc.text(`Grand Total Marks: ${totalFullMarks}`, leftColumnX, currentY)
-    doc.text(
-      `Total Marks Obtained: ${totalMarksObtained}`,
-      rightColumnX,
-      currentY
-    )
-    currentY += rowHeight
-    currentY=checkAndAddPage(doc, currentY)
-    // Row 3: Percentage and Result
-    doc.text(`Percentage: ${percentage.toFixed(2)}%`, leftColumnX, currentY)
-    doc.text(`Result: ${resultClass}`, rightColumnX, currentY)
-    currentY += rowHeight
-
-    // Row 4: Remarks
-    doc.text(`Remarks: ${resultRemark}`, leftColumnX, currentY)
-
-    currentY += 20
-    const currentDate = new Date().toLocaleDateString("en-GB") // Format: DD/MM/YYYY
-    doc.text(`Published On: ${currentDate}`, marginLeft, currentY)
-    currentY += 20
-    doc.setFontSize(12)
-    currentY = checkAndAddPage(doc, currentY)
-
-    // Footer Section
-    doc.text("Verified by:", marginLeft, currentY)
-
-    doc.text("Controller of Examinations", marginLeft, currentY + 20)
-    currentY = checkAndAddPage(doc, currentY)
-
-    doc.text("Teacher-in-Charge", 140, currentY)
-     doc.text("Chief Controller of Examinations", 140, currentY+20)
-   
-
-     if (preview) {
-       const pdfBlob = doc.output("blob") // Generate a Blob
-       const pdfURL = URL.createObjectURL(pdfBlob) // Create a URL for the Blob
-       window.open(pdfURL) // Open in a new tab
-     } else {
-       // Download the PDF directly
-       doc.save(
-         `student_${semesterData.studentId}_semester_${semesterData.semester.semester}.pdf`
-       )
-     }
   }
 }
+
 export default generatePDF
+
+// All data comes dynamically correct. just align the texts. in 'Summary Below the Table' ,'Footer' and 'Adding Verified by details' section texts. in proper positions even when new page added

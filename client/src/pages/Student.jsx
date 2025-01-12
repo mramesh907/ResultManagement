@@ -7,7 +7,7 @@ const Student = () => {
   const [studentId, setStudentId] = useState("")
   const [semester, setSemester] = useState("")
   const [semesterData, setSemesterData] = useState(null)
-  const [useCGPA, setCGPA] = useState(null)
+  const [gpa, setGPA] = useState(null)
   const [loading, setLoading] = useState(false)
   const [fetchAttempted, setFetchAttempted] = useState(false)
 
@@ -20,33 +20,39 @@ const Student = () => {
     setLoading(true)
     setFetchAttempted(false)
     toast.loading("Fetching data...")
+
     try {
       const response = await SummaryApi.fetchStudentDetails(studentId, semester)
-      const cgpaResponse = await SummaryApi.calculateCGPA(studentId, semester)
-
-      if (response && response.semester && cgpaResponse) {
+      const gparesponse= await SummaryApi.calculateGPA(studentId)
+      if (response && response.semester && gparesponse) {
         setSemesterData(response)
-        setCGPA(cgpaResponse.cgpa)
+        setGPA(gparesponse)
         setFetchAttempted(true)
         toast.dismiss()
         toast.success("Data fetched successfully!")
       } else {
         setSemesterData(null)
-        setCGPA(null)
+        setGPA(null)
         setFetchAttempted(true)
         toast.dismiss()
         toast.error("No data found for this student and semester.")
       }
     } catch (error) {
       setSemesterData(null)
-      setCGPA(null)
+      setGPA(null)
       setFetchAttempted(true)
       toast.dismiss()
-      toast.error("No data found for this student and semester.")
+      toast.error("Error fetching data. Please try again later.")
     } finally {
       setLoading(false)
       setStudentId("")
       setSemester("")
+    }
+  }
+
+  const handleGeneratePDF = (preview = false) => {
+    if (semesterData) {
+      generatePDF(semesterData,gpa, preview)
     }
   }
 
@@ -86,19 +92,23 @@ const Student = () => {
 
       {semesterData && semesterData.semester && (
         <div className="mt-4">
-          <button
-            onClick={() => generatePDF(semesterData, useCGPA, true)} // Pass `true` to enable preview
-            className="bg-yellow-500 text-white p-2 rounded hover:bg-yellow-600 mr-5"
-          >
-            Preview PDF
-          </button>
+          <div className="mb-4">
+            <button
+              onClick={() => handleGeneratePDF(true)} // Preview PDF
+              className="bg-yellow-500 text-white p-2 rounded hover:bg-yellow-600 mr-5 mb-5"
+            >
+              Preview PDF
+            </button>
 
-          <button
-            onClick={() => generatePDF(semesterData, useCGPA)}
-            className="bg-green-500 text-white p-2 rounded hover:bg-green-600"
-          >
-            Download PDF
-          </button>
+            <button
+              onClick={() => handleGeneratePDF()} // Download PDF
+              className="bg-green-500 text-white p-2 rounded hover:bg-green-600"
+            >
+              Download PDF
+            </button>
+          </div>
+
+          
         </div>
       )}
     </div>
