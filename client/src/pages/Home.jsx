@@ -23,7 +23,7 @@ const Home = () => {
     slidesToShow: 1, // Show one slide at a time
     slidesToScroll: 1, // Scroll one slide at a time
     autoplay: true, // Enable auto-scrolling
-    autoplaySpeed: 1000, // Delay between auto-scrolls
+    autoplaySpeed: 2000, // Delay between auto-scrolls
   }
 
   // Handle Next and Previous Slide
