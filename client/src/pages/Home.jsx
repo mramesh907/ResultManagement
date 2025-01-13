@@ -6,6 +6,7 @@ import banner3 from "../assets/banner3.png"
 import banner4 from "../assets/banner4.png"
 import banner5 from "../assets/banner5.png"
 import myPhoto from "../assets/myPhoto.png"
+import guiderPhoto from "../assets/guiderPhoto.jpg"
 import { FcPrevious, FcNext } from "react-icons/fc" // Import the icons
 // Import Slick Carousel styles
 import "slick-carousel/slick/slick.css"
@@ -99,6 +100,73 @@ const Home = () => {
                 <li>Experience in Node.js, Express, and MongoDB</li>
                 <li>Familiar with Frontend Development using React</li>
               </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Project Guide Details */}
+        <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md flex flex-col md:flex-row items-center space-y-6 md:space-y-0 md:space-x-8 mt-8">
+          {/* Project Guide Photo */}
+          <div className="flex-shrink-0 w-32 h-32 rounded-full overflow-hidden border-4 border-green-600">
+            <img
+              src={guiderPhoto}
+              alt="Project Guide's Photo"
+              className="w-full h-full object-cover"
+            />
+          </div>
+
+          {/* Project Guide Info */}
+          <div className="flex flex-col items-center md:items-start">
+            <h2 className="text-2xl font-semibold text-gray-800">
+              Krishna Gopal Dhal
+            </h2>
+            <p className="text-gray-600">Project Guider</p>
+            <div className="mt-4 text-gray-700">
+              <p>
+                <strong>Details:</strong>
+              </p>
+              <ul className="list-disc pl-5">
+                <li>Ph.D. from the University of Kalyani (2019)</li>
+                <li>
+                  M.Tech in Computer Science from Kalyani Government Engineering
+                  College (2013)
+                </li>
+                <li>
+                  B.Tech from Kalyani Government Engineering College (2011)
+                </li>
+                <li>
+                  Research Interests: Digital Image Processing, Medical Imaging,
+                  Nature-Inspired Optimization Algorithms, and Machine Learning
+                </li>
+                <li>H-index: 25 with 1,773 citations</li>
+                <li>Mentor for various student projects and research</li>
+              </ul>
+            </div>
+            <div className="mt-4 text-gray-700">
+              <p>
+                <strong>Contact:</strong>{" "}
+                <a href="mailto:krishnagopal.dhal@midnaporecollege.ac.in">
+                  krishnagopal.dhal@midnaporecollege.ac.in
+                </a>
+              </p>
+              <p>
+                <strong>Profiles:</strong>
+                <a
+                  href="https://scholar.google.co.in/citations?hl=en&user=Xu5U3VgAAAAJ"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Google Scholar
+                </a>{" "}
+                |
+                <a
+                  href="https://www.researchgate.net/profile/Krishna-Gopal-Dhal"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  ResearchGate
+                </a>
+              </p>
             </div>
           </div>
         </div>
