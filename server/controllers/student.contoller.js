@@ -69,8 +69,6 @@ export const importStudentsFromExcel = async (req, res) => {
       })
     }
 
-    // const filePath = path.join(__dirname, "..", "uploads", file.name)
-    // const filePath = path.join('/tmp', file.name)
     const tempDir =
       process.env.NODE_ENV === "production"
         ? "/tmp"
@@ -89,49 +87,27 @@ export const importStudentsFromExcel = async (req, res) => {
         const workbook = xlsx.readFile(filePath)
         const sheet = workbook.Sheets[workbook.SheetNames[0]]
         const data = xlsx.utils.sheet_to_json(sheet, { defval: null })
-        // console.log('data',data)
-        if (data.length < 2) {
+
+        if (data.length < 1) {
           fs.unlinkSync(filePath)
           return res.status(400).json({
-            message:
-              "The Excel file must have at least 2 rows (headers and credits)",
+            message: "The Excel file must have at least one data row.",
           })
         }
-        // Extract headers from the first row
-        const headers = Object.keys(data[0])
-        // Extract credits from the second row
-        const creditsRow = data[0] // Assume second row contains credits
-        const subjectCredits = {}
-        for (const key in creditsRow) {
-          if (
-            key !== "Student ID" &&
-            key !== "Name" &&
-            key !== "Roll" &&
-            key !== "Reg No." &&
-            key !== "Session" &&
-            key !== "Year" &&
-            key !== "Semester No"
-          ) {
-            subjectCredits[key.trim()] = creditsRow[key]
-          }
-        }
-
-        // console.log("Subject to Credits Mapping:", subjectCredits)
 
         const students = []
-        for (let i = 1; i < data.length; i++) {
-          const row = data[i]
-
-          // console.log("row", row)
+        let updatedStudents = 0
+        for (const row of data) {
           const {
             "Student ID": studentId,
             Name: name,
             Roll: roll,
+            No: no,
             "Reg No.": registrationNo,
             Session: session,
             Year: year,
             "Semester No": semester,
-            ...subjectMarks
+            ...subjectData
           } = row
 
           if (
@@ -151,17 +127,46 @@ export const importStudentsFromExcel = async (req, res) => {
           }
 
           const results = []
-          for (const subject in subjectMarks) {
-            if (subject.endsWith("__EMPTY") || subjectMarks[subject] === null) {
-              continue // Skip empty or null keys
-            }
-
-            const mark = subjectMarks[subject]
-            if (typeof mark === "number" && mark >= 0 && mark <= 100) {
+          for (const key in subjectData) {
+            const match = key.match(
+              /^(.+?)\((.+?),(.+?),(.+?),(\d+),(\d+),(\d+)\)$/
+            )
+            if (match) {
+              const [, paper, course,subject, type, ciaMarks, eseMarks, credit] = match
+              const [ciamarksObtained, esemarksObtained] = (
+                subjectData[key] || "0,0"
+              )
+                .split(",")
+                .map(Number) // Extract marks
+              // Validation: Check if obtained marks are valid
+              if (
+                ciamarksObtained > Number(ciaMarks) ||
+                esemarksObtained > Number(eseMarks)
+              ) {
+                fs.unlinkSync(filePath) // Delete the temporary file
+                return res.status(400).json({
+                  message: `Invalid marks in subject: ${paper}. Obtained marks exceed maximum marks.`,
+                  subject: paper,
+                  ciamarksObtained,
+                  esemarksObtained,
+                  ciaMarks,
+                  eseMarks,
+                })
+              }
               results.push({
                 subject: subject.trim(),
-                mark,
-                credit: subjectCredits[subject.trim()] || null, // Include credit
+                course: course.trim(),
+                paper: paper.trim(),
+                types: [
+                  {
+                    type: type.trim(),
+                    ciaMarks: Number(ciaMarks),
+                    eseMarks: Number(eseMarks),
+                    credit: Number(credit),
+                    ciamarksObtained: Number(ciamarksObtained),
+                    esemarksObtained: Number(esemarksObtained),
+                  },
+                ],
               })
             }
           }
@@ -169,7 +174,7 @@ export const importStudentsFromExcel = async (req, res) => {
           const existingStudent = await Student.findOne({ studentId })
           if (existingStudent) {
             const existingSemester = existingStudent.semesters.find(
-              (sem) => String(sem.semester).trim() === String(semester).trim() // Normalize comparison
+              (sem) => String(sem.semester).trim() === String(semester).trim()
             )
 
             if (existingSemester) {
@@ -178,40 +183,29 @@ export const importStudentsFromExcel = async (req, res) => {
                   (res) => res.subject === result.subject
                 )
                 if (existingSubject) {
-                  existingSubject.mark = result.mark // Update marks
-                  existingSubject.credit =
-                    subjectCredits[result.subject] || null // Update credit
+                  existingSubject.types = result.types
                 } else {
-                  existingSemester.results.push(result) // Add new subjects
+                  existingSemester.results.push(result)
                 }
               })
 
               await existingStudent.save()
-              // console.log(
-              //   `Updated semester ${semester} for Student ID ${studentId}`
-              // )
             } else {
-              // Add a new semester if it doesn't exist
               existingStudent.semesters.push({ semester, results })
               await existingStudent.save()
-              // console.log(
-              //   `Added new semester ${semester} for Student ID ${studentId}`
-              // )
             }
+
+            updatedStudents++
           } else {
             const newStudent = new Student({
               studentId,
               name,
               roll,
+              no,
               registrationNo,
               session,
               year,
-              semesters: [
-                {
-                  semester,
-                  results,
-                },
-              ],
+              semesters: [{ semester, results }],
             })
             students.push(newStudent)
           }
@@ -226,11 +220,10 @@ export const importStudentsFromExcel = async (req, res) => {
         res.status(200).json({
           message: "Students imported successfully",
           newStudents: students.length,
-          updatedStudents: data.length - students.length,
+          updatedStudents,
         })
       } catch (error) {
         fs.unlinkSync(filePath)
-        // console.error("Error processing Excel file:", error)
         res.status(500).json({
           message: "Error processing Excel file",
           error: error.message,
@@ -238,14 +231,13 @@ export const importStudentsFromExcel = async (req, res) => {
       }
     })
   } catch (error) {
-    fs.unlinkSync(filePath)
-    // console.error("Error importing students:", error)
     res.status(500).json({
       message: "Error importing students",
       error: error.message,
     })
   }
 }
+
 
 // Function to update marks for a specific student and semester
 export const updateMarksForSemester = async (req, res) => {
@@ -450,6 +442,7 @@ export const getStudentByIdAndSemester = async (req, res) => {
       studentId: student.studentId,
       name: student.name,
       roll: student.roll,
+      no: student.no,
       registrationNo: student.registrationNo,
       session: student.session,
       year: student.year,

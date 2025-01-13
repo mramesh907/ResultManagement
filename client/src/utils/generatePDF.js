@@ -53,12 +53,14 @@ const generatePDF = (semesterData, gpa, preview = false) => {
   )
   doc.text(`Student Name: ${semesterData.name || "N/A"}`, 120, currentY)
   currentY += 10
-  doc.text(`Roll No: ${semesterData.roll || "N/A"}`, marginLeft, currentY)
+  doc.text(`Roll: ${semesterData.roll || "N/A"}`, marginLeft, currentY)
   doc.text(
     `Registration No: ${semesterData.registrationNo || "N/A"} of ${semesterData.session || "N/A"}`,
-    120,
-    currentY
+    marginLeft,
+    currentY + 10
   )
+  
+  doc.text(`No: ${semesterData.no || "N/A"}`, 120, currentY)
   currentY += 20
 
   // Semester Results Header
