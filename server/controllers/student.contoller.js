@@ -239,7 +239,7 @@ export const importStudentsFromExcel = async (req, res) => {
 }
 
 
-// Function to update marks for a specific student and semester
+// Manually update marks for student
 export const updateMarksForSemester = async (req, res) => {
   try {
     const {

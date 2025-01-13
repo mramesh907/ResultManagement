@@ -7,6 +7,7 @@ import connectDB from "./config/connectDB.js"
 import fileUpload from "express-fileupload"
 import studentRoutes from "./routes/student.route.js"
 import authRouters from "./routes/auth.route.js"
+import scholarshipRoutes from "./routes/scholarship.route.js"
 
 const app = express()
 app.use(
@@ -34,6 +35,7 @@ app.get("/", (req, res) => {
 })
 app.use("/api/auth", authRouters)
 app.use("/api/students", studentRoutes)
+app.use("/api/rewards", scholarshipRoutes)
 
 // Error handling middleware
 app.use((err, req, res, next) => {

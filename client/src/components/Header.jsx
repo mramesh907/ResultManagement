@@ -11,15 +11,27 @@ const Header = () => {
 
   // Function to display greeting toast
   const showGreeting = () => {
-    toast.dismiss() // Dismiss any existing toasts
+    toast.dismiss()
     const currentHour = new Date().getHours()
+    let greetingMessage = "Good "
+
     if (currentHour < 12) {
-      toast.success("Good Morning!") // Display "Good Morning" toast
+      greetingMessage += "Morning!"
+    } else if (currentHour < 15) {
+      // Good Noon between 12 PM to 2:59 PM
+      greetingMessage += "Noon!"
     } else if (currentHour < 18) {
-      toast.success("Good Afternoon!") // Display "Good Afternoon" toast
+      // Good Afternoon between 3 PM to 5:59 PM
+      greetingMessage += "Afternoon!"
+    } else if (currentHour < 21) {
+      // Good Evening between 6 PM to 8:59 PM
+      greetingMessage += "Evening!"
     } else {
-      toast.success("Good Evening!") // Display "Good Evening" toast
+      // Good Night after 9 PM
+      greetingMessage += "Night!"
     }
+
+    toast.success(greetingMessage, { duration: 1000 }) // You can adjust the duration
   }
 
   // Show greeting when the component mounts (first render)

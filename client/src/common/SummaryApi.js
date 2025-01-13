@@ -26,8 +26,13 @@ const apiRequest = async (url, method, data = null, isSignIn = false) => {
     // console.log("API Response:", response.data)
     return response.data // Return the response data
   } catch (error) {
-    console.error("API Request Error:", error.response || error.message) // Better error logging
-    throw error // Re-throw the error to handle it in the component
+    // Check if the error response exists (error from the backend)
+    const errorMessage =
+      error.response && error.response.data
+        ? error.response.data.error || error.response.data.message
+        : error.message // Fallback to general error message
+    console.error("API Request Error:", errorMessage)
+    throw new Error(errorMessage) // Re-throw with error message
   }
 }
 
@@ -73,21 +78,31 @@ const SummaryApi = {
 
   // Calculate CGPA
   calculateCGPA: async (studentId, semester) => {
-    return apiRequest(
-      `/api/students/calculate-cgpa/${studentId}`,
-      "GET"
-    )
+    return apiRequest(`/api/students/calculate-cgpa/${studentId}`, "GET")
   },
   calculateGPA: async (studentId) => {
-    return apiRequest(
-      `/api/students/calculate-gpa/${studentId}`,
-      "GET"
-    )
+    return apiRequest(`/api/students/calculate-gpa/${studentId}`, "GET")
   },
 
   // Get top rankers
   getTopRankers: async () => {
     return apiRequest(`/api/students/top-rankers`, "GET")
+  }, // Add new scholarship
+  addScholarship: async (scholarshipData) => {
+    return apiRequest("/api/rewards/scholarships", "POST", scholarshipData)
+  },
+
+  // Fetch all scholarships
+  getScholarships: async () => {
+    return apiRequest("/api/rewards/scholarships", "GET")
+  },
+
+  // Get eligible scholarships based on CGPA and family income
+  getEligibleScholarships: async (cgpa, familyIncome) => {
+    return apiRequest(
+      `/api/rewards/eligible-scholarships?cgpa=${cgpa}&familyIncome=${familyIncome}`,
+      "GET"
+    )
   },
 }
 
