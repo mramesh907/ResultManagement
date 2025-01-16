@@ -46,7 +46,12 @@ const Admin = () => {
         setIsAuthenticated(true)
       }
     } catch (error) {
-      toast.error("Login failed. Please check your credentials.")
+      if (error.response && error.response.data) {
+        toast.error(error.response.data.message)
+        return
+      }else{
+        toast.error("Login failed. Please check your credentials.")
+      }
     }
   }
 
@@ -107,7 +112,12 @@ const Admin = () => {
         toast.error("Failed to upload file. No response data received.")
       }
     } catch (error) {
-      toast.error("Error uploading file")
+      if (error.response && error.response.data) {
+        toast.error(error.response.data.message)
+        return
+      }else{
+        toast.error("Error uploading file. Please try again later.")
+      }
     } finally {
       setUploading(false)
     }
@@ -128,7 +138,12 @@ const Admin = () => {
       }
     } catch (error) {
       setStudentExists(false)
-      toast.error("Student does not exist in the system.")
+      if (error.response && error.response.data) {
+        toast.error(error.response.data.message)
+      }else{
+        toast.error("Error checking student existence")
+      }
+
     }
   }
 
@@ -165,7 +180,13 @@ const Admin = () => {
       setSubject("")
       setStudentExists(null)
     } catch (error) {
-      toast.error("Error submitting marks")
+      setStudentExists(null)
+      if (error.response && error.response.data) {
+        toast.error(error.response.data.message)
+        return
+      }else{
+        toast.error("Error submitting marks")
+      }
     }
   }
 
@@ -203,7 +224,12 @@ const getTopStudent = async () => {
       toast.error("No top student found for the selected semester.")
     }
   } catch (error) {
-    toast.error("Error fetching top student data.")
+    setTopStudent(null)
+    if (error.response && error.response.status === 404) {
+      toast.error("No top student found for the selected semester.")
+    }else{
+      toast.error("Error fetching top student data.")
+    }
   }
 }
 

@@ -26,13 +26,16 @@ const apiRequest = async (url, method, data = null, isSignIn = false) => {
     // console.log("API Response:", response.data)
     return response.data // Return the response data
   } catch (error) {
-    // Check if the error response exists (error from the backend)
-    const errorMessage =
-      error.response && error.response.data
-        ? error.response.data.error || error.response.data.message
-        : error.message // Fallback to general error message
-    console.error("API Request Error:", errorMessage)
-    throw new Error(errorMessage) // Re-throw with error message
+    // console.log("API Error:", error.response.data.message)
+    
+    // // Check if the error response exists (error from the backend)
+    // const errorMessage =
+    //   error.response && error.response.data
+    //     ? error.response.data.error || error.response.data.message
+    //     : error.message // Fallback to general error message
+        
+        
+    throw  error // Re-throw with error message
   }
 }
 
@@ -101,6 +104,12 @@ const SummaryApi = {
   getEligibleScholarships: async (cgpa, familyIncome) => {
     return apiRequest(
       `/api/rewards/eligible-scholarships?cgpa=${cgpa}&familyIncome=${familyIncome}`,
+      "GET"
+    )
+  },
+  getCompareResults: async (studentId1, studentId2, semester) => {
+    return apiRequest(
+      `/api/students/compareResults/${studentId1}/${studentId2}/semester/${semester}`,
       "GET"
     )
   },

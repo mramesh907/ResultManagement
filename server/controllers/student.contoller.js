@@ -1102,6 +1102,75 @@ export const calculateGPA = async (req, res) => {
   })
 }
 
+// Comparison student
+export const getComparisonStudent = async (req, res) => {
+  const { studentId1, studentId2, semester } = req.params;
+
+    try {
+        // Fetch data for both students for the given semester
+        const student1 = await Student.findOne({
+          studentId: studentId1,
+          "semesters.semester": semester,
+        })
+      // console.log(student1);
+      
+        const student2 = await Student.findOne({
+            studentId: studentId2,
+            'semesters.semester': semester
+        });
+
+
+        // Check if both students exist
+        if (!student1 || !student2) {
+          return res.status(404).json({
+            message: "One or both students not found or semester data missing",
+          })
+        }
+
+        // Extract results for the specified semester
+        const semesterData1 = student1.semesters.find(s => s.semester == semester);
+        
+        const semesterData2 = student2.semesters.find(s => s.semester == semester);
+
+        // Check if both students have results for the semester
+        if (!semesterData1 || !semesterData2) {
+            return res.status(404).json({ message: 'Semester data not found for one or both students' });
+        }
+
+        // Compare results paper-wise
+        const comparison = semesterData1.results.map((result1, index) => {
+            const result2 = semesterData2.results[index];
+
+            // Initialize comparison data for this paper
+            const comparisonData = {
+                paperName: result1.paper,
+                student1TotalMarks: 0,
+                student2TotalMarks: 0,
+                marksDifference: 0
+            };
+
+            // Calculate total marks for both students (CIA + ESE)
+            result1.types.forEach((type1, i) => {
+                const type2 = result2.types[i];
+                comparisonData.student1TotalMarks += type1.ciamarksObtained + type1.esemarksObtained;
+                comparisonData.student2TotalMarks += type2.ciamarksObtained + type2.esemarksObtained;
+            });
+
+            // Calculate the difference in total marks
+            comparisonData.marksDifference = comparisonData.student1TotalMarks - comparisonData.student2TotalMarks;
+
+            return comparisonData;
+        });
+
+        // Send the comparison data in the response
+        res.json(comparison);
+
+    } catch (error) {
+        console.error('Error comparing results:', error);
+        res.status(500).json({ message: 'Error comparing results', error });
+    }
+}
+
 
 
 

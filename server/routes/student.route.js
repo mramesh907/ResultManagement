@@ -11,6 +11,7 @@ import {
   calculateSGPA,
   calculateCGPASGPA,
   calculateGPA,
+  getComparisonStudent,
 } from "../controllers/student.contoller.js" // Import the controller
 
 const router = express.Router()
@@ -24,6 +25,7 @@ router.get("/calculate-cgpa/:studentId", calculateCGPA) // Calculate CGPA for a 
 router.get("/calculate-sgpa/:studentId", calculateSGPA) // Calculate SGPA for a student in a specific semester
 router.get("/calculate-cgpa-sgpa/:studentId", calculateCGPASGPA) // Calculate SGPA for a student in a specific semester
 router.get("/calculate-gpa/:studentId", calculateGPA) // Calculate SGPA for a student in a specific semester
+router.get("/compareResults/:studentId1/:studentId2/semester/:semester", getComparisonStudent)
 
 // Protected routes (requires authentication or authorization)
 router.post("/add-student", addNewStudent) // Add a new student
