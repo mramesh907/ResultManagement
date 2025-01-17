@@ -113,6 +113,12 @@ const SummaryApi = {
       "GET"
     )
   },
+  getSemesterWiseCount: async () => {
+    return apiRequest("/api/students/admin/semester-wise-count", "GET")
+  },
+  getSemesterWisePerformance: async () => {
+    return apiRequest("/api/students/admin/semester-wise-performance", "GET")
+  } 
 }
 
 export default SummaryApi

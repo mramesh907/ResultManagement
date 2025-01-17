@@ -16,8 +16,8 @@ const Navbar = ({ onSelectSection, selectedSection }) => {
               "upload",
               "marks",
               "topStudent",
-              "topRankers",
               "scholarships",
+              "charts",
             ].map((section) => (
               <div
                 key={section}
@@ -31,8 +31,8 @@ const Navbar = ({ onSelectSection, selectedSection }) => {
                 {section === "upload" && "Upload Students"}
                 {section === "marks" && "Manual Marks Entry"}
                 {section === "topStudent" && "Top Student"}
-                {section === "topRankers" && "Top Rankers"}
                 {section === "scholarships" && "Manage Scholarships"}
+                {section === "charts" && "Admin Charts"}
               </div>
             ))}
           </div>
@@ -67,7 +67,7 @@ const Navbar = ({ onSelectSection, selectedSection }) => {
       {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden bg-purple-600 px-4 py-6 space-y-4">
-          {["upload", "marks", "topStudent", "topRankers", "scholarships"].map(
+          {["upload", "marks", "topStudent", "topRankers", "scholarships", "charts"].map(
             (section) => (
               <div
                 key={section}
@@ -84,8 +84,8 @@ const Navbar = ({ onSelectSection, selectedSection }) => {
                 {section === "upload" && "Upload Students"}
                 {section === "marks" && "Manual Marks Entry"}
                 {section === "topStudent" && "Top Student"}
-                {section === "topRankers" && "Top Rankers"}
                 {section === "scholarships" && "Manage Scholarships"}
+                {section === "charts" && "Admin Charts"}
               </div>
             )
           )}

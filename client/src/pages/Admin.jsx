@@ -6,6 +6,7 @@ import SummaryApi from "../common/SummaryApi"
 import { FiLogOut } from "react-icons/fi"
 import Navbar from "./Navbar"
 import { FaFileUpload, FaDownload } from "react-icons/fa"
+import AdminCharts from "../components/AdminCharts"
 const Admin = () => {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -382,11 +383,16 @@ const getTopStudent = async () => {
           {/* Top Student Section */}
           {selectedSection === "topStudent" && (
             <div className="mt-8">
-              <h3 className="text-xl font-semibold mb-4">Check Top Student</h3>
-              <div className="mb-4">
+              {/* Title for Top Student */}
+              <h3 className="text-2xl font-semibold text-gray-800 mb-6">
+                Check Top Student
+              </h3>
+
+              {/* Semester Selection */}
+              <div className="mb-6 flex items-center space-x-4">
                 <select
                   onChange={handleSemesterChange}
-                  className="cursor-pointer p-2 text-sm border border-gray-300 rounded w-1/2 focus:ring-2 focus:ring-blue-500"
+                  className="p-3 text-sm border border-gray-300 rounded-lg w-1/2 focus:ring-2 focus:ring-blue-500 shadow-sm"
                 >
                   <option value="">Select Semester</option>
                   {[...Array(8)].map((_, idx) => (
@@ -395,31 +401,45 @@ const getTopStudent = async () => {
                     </option>
                   ))}
                 </select>
+                <button
+                  onClick={getTopStudent}
+                  className="bg-blue-500 text-white p-3 text-sm rounded-lg hover:bg-blue-600 transition-all duration-300 w-1/3"
+                >
+                  Get Top Student
+                </button>
               </div>
-              <button
-                onClick={getTopStudent}
-                className="bg-blue-500 text-white p-2 text-sm rounded hover:bg-blue-600 w-full"
-              >
-                Get Top Student
-              </button>
 
+              {/* Top Student Details */}
               {topStudent && (
-                <div className="mt-4 p-4 bg-gray-100 border rounded-md">
-                  <h4 className="text-lg font-bold">{topStudent.name}</h4>
-                  <p>Student ID: {topStudent.studentId}</p>
-                  <p>Total Marks: {topStudent.totalMarks}</p>
-                  <p>Semester: {topStudent.semester}</p>
+                <div className="mt-6 p-6 bg-white shadow-xl rounded-lg border-t-4 border-blue-500">
+                  <h4 className="text-2xl font-bold text-blue-600 mb-2">
+                    {topStudent.name}
+                  </h4>
+                  <p className="text-sm text-gray-700">
+                    Student ID: {topStudent.studentId}
+                  </p>
+                  <p className="text-sm text-gray-700">
+                    Total Marks: {topStudent.totalMarks}
+                  </p>
+                  <p className="text-sm text-gray-700">
+                    Semester: {topStudent.semester}
+                  </p>
 
-                  <h5 className="text-md font-semibold mt-4">Results:</h5>
+                  <h5 className="text-lg font-semibold mt-4 text-gray-800">
+                    Results:
+                  </h5>
                   {topStudent.results &&
                     topStudent.results.map((result, idx) => (
-                      <div key={idx} className="mt-2">
-                        <h6 className="font-semibold">
+                      <div
+                        key={idx}
+                        className="mt-4 p-4 bg-gray-50 border rounded-md"
+                      >
+                        <h6 className="font-semibold text-gray-700">
                           {result.subject} - {result.course}
                         </h6>
                         {result.types &&
                           result.types.map((type, i) => (
-                            <div key={i} className="mt-1">
+                            <div key={i} className="mt-3 text-sm text-gray-600">
                               <p>Type: {type.type}</p>
                               <p>Credits: {type.credit}</p>
                               <p>
@@ -427,7 +447,7 @@ const getTopStudent = async () => {
                                 {type.ciamarksObtained})
                               </p>
                               <p>
-                                Ese Marks: {type.eseMarks} (Obtained:{" "}
+                                ESE Marks: {type.eseMarks} (Obtained:{" "}
                                 {type.esemarksObtained})
                               </p>
                             </div>
@@ -436,26 +456,30 @@ const getTopStudent = async () => {
                     ))}
                 </div>
               )}
-            </div>
-          )}
 
-          {/* Top Rankers Section */}
-          {selectedSection === "topRankers" && (
-            <div className="mt-8">
-              <h3 className="text-xl font-semibold mb-4">Top Rankers</h3>
+              {/* Top Rankers Section */}
+              <h3 className="text-2xl font-semibold text-gray-800 mb-6">
+                Top Rankers
+              </h3>
               <button
                 onClick={getTopRankers}
-                className="bg-blue-500 text-white p-2 text-sm rounded hover:bg-blue-600 w-full"
+                className="bg-blue-500 text-white p-3 text-sm rounded-lg hover:bg-blue-600 transition-all duration-300 w-full"
               >
                 Get Top Rankers
               </button>
               {topRankers.length > 0 && (
-                <div className="mt-4">
-                  <h4 className="font-semibold mb-2">Top Rankers:</h4>
-                  <ul className="list-disc pl-6">
+                <div className="mt-4 p-4 bg-gray-100 border rounded-lg">
+                  <h4 className="font-semibold text-gray-800 mb-4">
+                    Top Rankers:
+                  </h4>
+                  <ul className="list-disc pl-6 space-y-2">
                     {topRankers.map((ranker, idx) => (
-                      <li key={idx}>
-                        {ranker.name} - {ranker.highestMarks} Marks
+                      <li key={idx} className="text-gray-700">
+                        <span className="font-semibold">{ranker.name}</span> -{" "}
+                        <span className="text-blue-600">
+                          {ranker.highestMarks} Marks
+                        </span> {" "}
+                        <span>(StudentId: {ranker.studentId})</span>
                       </li>
                     ))}
                   </ul>
@@ -471,6 +495,12 @@ const getTopStudent = async () => {
                 Manage Scholarships
               </h3>
               <ScholarshipForm /> {/* Render the scholarship form here */}
+            </div>
+          )}
+          {selectedSection === "charts" && (
+            <div className="mt-8">
+              <h3 className="text-xl font-semibold mb-4">Analytics</h3>
+              <AdminCharts /> {/* Render the pie charts here */}
             </div>
           )}
         </div>

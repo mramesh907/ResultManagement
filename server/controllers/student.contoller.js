@@ -132,7 +132,16 @@ export const importStudentsFromExcel = async (req, res) => {
               /^(.+?)\((.+?),(.+?),(.+?),(\d+),(\d+),(\d+)\)$/
             )
             if (match) {
-              const [, paper, course,subject, type, ciaMarks, eseMarks, credit] = match
+              const [
+                ,
+                paper,
+                course,
+                subject,
+                type,
+                ciaMarks,
+                eseMarks,
+                credit,
+              ] = match
               const [ciamarksObtained, esemarksObtained] = (
                 subjectData[key] || "0,0"
               )
@@ -238,7 +247,6 @@ export const importStudentsFromExcel = async (req, res) => {
   }
 }
 
-
 // Manually update marks for student
 export const updateMarksForSemester = async (req, res) => {
   try {
@@ -293,7 +301,7 @@ export const updateMarksForSemester = async (req, res) => {
       ) {
         return res.status(400).json({ error: "Student data is incomplete." })
       }
- // Ensure obtained marks are not greater than maximum marks
+      // Ensure obtained marks are not greater than maximum marks
       if (
         ciamarksObtained > ciaMarks ||
         esemarksObtained > eseMarks ||
@@ -303,7 +311,7 @@ export const updateMarksForSemester = async (req, res) => {
         return res.status(400).json({
           error: `Invalid marks for studentId: ${studentId}. 
                   Obtained marks cannot be greater than the maximum marks or less than 0.`,
-        });
+        })
       }
       const studentRecord = await Student.findOne({ studentId })
       if (!studentRecord) {
@@ -403,25 +411,25 @@ export const updateMarksForSemester = async (req, res) => {
 
 // Get student details by student ID and semester number
 export const getStudentByIdAndSemester = async (req, res) => {
-  const { studentId, semester } = req.params; // Extract studentId and semester from the request parameters
+  const { studentId, semester } = req.params // Extract studentId and semester from the request parameters
 
   try {
     // Find student by studentId and filter for the specific semester
     const student = await Student.findOne({
       studentId,
       "semesters.semester": semester, // Check if the semester exists in the student's semesters array
-    });
+    })
 
     if (!student) {
       return res.status(404).json({
         message: `Student with ID ${studentId} not found or semester ${semester} not found`,
-      });
+      })
     }
 
     // Find the semester details inside the student's semesters array
     const semesterDetails = student.semesters.find(
       (sem) => sem.semester === semester
-    );
+    )
 
     // Get the detailed marks for each subject in the semester
     const subjectsDetails = semesterDetails.results.map((result) => ({
@@ -436,7 +444,7 @@ export const getStudentByIdAndSemester = async (req, res) => {
         ciamarksObtained: type.ciamarksObtained,
         esemarksObtained: type.esemarksObtained,
       })),
-    }));
+    }))
 
     res.status(200).json({
       studentId: student.studentId,
@@ -450,24 +458,23 @@ export const getStudentByIdAndSemester = async (req, res) => {
         semester: semesterDetails.semester,
         results: subjectsDetails,
       },
-    });
+    })
   } catch (error) {
     // Handle any errors
     res.status(500).json({
       message: "Error retrieving student data",
       error: error.message,
-    });
+    })
   }
-};
-
+}
 
 // Check if student exists
 export const checkStudentExist = async (req, res) => {
-  const { studentId } = req.params;
+  const { studentId } = req.params
 
   try {
     // Query the database to check if the student exists by studentId
-    const student = await Student.findOne({ studentId });
+    const student = await Student.findOne({ studentId })
 
     if (student) {
       // If student exists, return response with success
@@ -475,73 +482,70 @@ export const checkStudentExist = async (req, res) => {
         exists: true,
         studentId: student.studentId,
         name: student.name,
-        message: `Student ${student.name} found`
-      });
+        message: `Student ${student.name} found`,
+      })
     } else {
       // If student does not exist, return response with error message
       return res.status(404).json({
         exists: false,
-        message: `Student with ID ${studentId} not found`
-      });
+        message: `Student with ID ${studentId} not found`,
+      })
     }
   } catch (error) {
     // Handle any server errors
-    console.error("Error in checking student existence:", error);
+    console.error("Error in checking student existence:", error)
     return res.status(500).json({
       message: "Server error while checking student existence",
       error: error.message,
-    });
+    })
   }
-};
-
+}
 
 // Get top student for a specific semester
 export const getTopStudentForSemester = async (req, res) => {
-  const { semester } = req.params; // Extract semester from request parameters
+  const { semester } = req.params // Extract semester from request parameters
 
   try {
     // Find all students who have results for the specific semester
     const students = await Student.find({
       "semesters.semester": semester, // Check if the semester exists in any student's semesters (treating semester as a string)
-    });
+    })
 
     if (students.length === 0) {
       return res.status(404).json({
         message: `No results found for semester ${semester}`,
-      });
+      })
     }
 
-    let topStudent = null;
-    let highestMarks = -1;
+    let topStudent = null
+    let highestMarks = -1
 
     // Iterate over each student and calculate their total marks for the given semester
     for (const student of students) {
       const semesterDetails = student.semesters.find(
         (sem) => sem.semester === semester // Match semester as a string
-      );
+      )
 
       // If no semester details are found, skip this student
       if (!semesterDetails) {
-        continue; // Skip this student
+        continue // Skip this student
       }
 
       // Sum the marks for each subject in the semester
-      const totalMarks = semesterDetails.results.reduce(
-        (sum, result) => {
-          // For each result, sum the CIA and ESE marks from all paper types
-          const marksForSubject = result.types.reduce(
-            (subSum, type) => subSum + type.ciaMarks + type.eseMarks,
-            0
-          );
-          return sum + marksForSubject;
-        },
-        0
-      );
+      const totalMarks = semesterDetails.results.reduce((sum, result) => {
+        // For each result, sum the CIA and ESE marks from all paper types
+        const marksForSubject = result.types.reduce(
+          (subSum, type) =>
+            subSum + type.ciamarksObtained + type.esemarksObtained,
+          0
+        )
+        return sum + marksForSubject
+      }, 0)
 
       // Update topStudent if current student's total marks are higher
       if (totalMarks > highestMarks) {
-        highestMarks = totalMarks;
-        topStudent = student;
+        highestMarks = totalMarks
+        topStudent = student
       }
     }
 
@@ -554,32 +558,31 @@ export const getTopStudentForSemester = async (req, res) => {
         semester: topStudent.semesters.find(
           (sem) => sem.semester === semester // Match semester as a string
         ),
-      });
+      })
     } else {
       res.status(404).json({
         message: "No student has marks for this semester.",
-      });
+      })
     }
   } catch (error) {
     // console.error("Error fetching top student for semester:", error)
     res.status(500).json({
       message: "Error fetching top student for semester",
       error: error.message,
-    });
+    })
   }
-};
-
+}
 
 // Get top rankers
 export const getTopRankers = async (req, res) => {
   try {
     // Fetch all students
-    const students = await Student.find();
+    const students = await Student.find()
 
     if (students.length === 0) {
       return res.status(404).json({
         message: "No students found",
-      });
+      })
     }
 
     // Create an array to store total marks for each student, based on their highest semester marks
@@ -591,43 +594,41 @@ export const getTopRankers = async (req, res) => {
           return (
             sum +
             result.types.reduce(
-              (subSum, type) => subSum + type.ciaMarks + type.eseMarks,
+              (subSum, type) =>
+                subSum + type.ciamarksObtained + type.esemarksObtained,
               0
             )
-          );
-        }, 0);
+          )
+        }, 0)
 
         // Compare and get the maximum total marks for the semester
-        return Math.max(highest, semesterMarks);
-      }, 0);
+        return Math.max(highest, semesterMarks)
+      }, 0)
 
       return {
         studentId: student.studentId,
         name: student.name,
         highestMarks, // Store the highest marks from any semester
-      };
-    });
+      }
+    })
 
     // Sort students by highestMarks in descending order
-    studentRanks.sort((a, b) => b.highestMarks - a.highestMarks);
+    studentRanks.sort((a, b) => b.highestMarks - a.highestMarks)
 
     // Get the top 5 rankers
-    const topRankers = studentRanks.slice(0, 5);
+    const topRankers = studentRanks.slice(0, 5)
 
     res.status(200).json({
       message: "Top 5 rankers based on highest marks in any semester",
       rankers: topRankers,
-    });
+    })
   } catch (error) {
     res.status(500).json({
       message: "Error fetching top rankers",
       error: error.message,
-    });
+    })
   }
-};
-
-
-
+}
 
 // Calculate CGPA
 // Calculate CGPA across all semesters
@@ -726,7 +727,6 @@ export const calculateCGPA = async (req, res) => {
   }
 }
 
-
 // Function to calculate SGPA for each semester based on Student ID
 export const calculateSGPA = async (req, res) => {
   const { studentId } = req.params // Get the studentId from request params
@@ -798,8 +798,7 @@ export const calculateSGPA = async (req, res) => {
   return res.status(200).json(sgpas)
 }
 
-
-// 
+//
 export const calculateCGPASGPA = async (req, res) => {
   const { studentId } = req.params // Get the studentId from request params
 
@@ -921,7 +920,6 @@ export const calculateCGPASGPA = async (req, res) => {
   // Return the SGPA and CGPA for each semester
   return res.status(200).json(cgpas)
 }
-
 
 export const calculateGPA = async (req, res) => {
   const { studentId } = req.params // Get the studentId from request params
@@ -1104,77 +1102,123 @@ export const calculateGPA = async (req, res) => {
 
 // Comparison student
 export const getComparisonStudent = async (req, res) => {
-  const { studentId1, studentId2, semester } = req.params;
+  const { studentId1, studentId2, semester } = req.params
 
-    try {
-        // Fetch data for both students for the given semester
-        const student1 = await Student.findOne({
-          studentId: studentId1,
-          "semesters.semester": semester,
-        })
-      // console.log(student1);
-      
-        const student2 = await Student.findOne({
-            studentId: studentId2,
-            'semesters.semester': semester
-        });
+  try {
+    // Fetch data for both students for the given semester
+    const student1 = await Student.findOne({
+      studentId: studentId1,
+      "semesters.semester": semester,
+    })
+    // console.log(student1);
 
+    const student2 = await Student.findOne({
+      studentId: studentId2,
+      "semesters.semester": semester,
+    })
 
-        // Check if both students exist
-        if (!student1 || !student2) {
-          return res.status(404).json({
-            message: "One or both students not found or semester data missing",
-          })
-        }
-
-        // Extract results for the specified semester
-        const semesterData1 = student1.semesters.find(s => s.semester == semester);
-        
-        const semesterData2 = student2.semesters.find(s => s.semester == semester);
-
-        // Check if both students have results for the semester
-        if (!semesterData1 || !semesterData2) {
-            return res.status(404).json({ message: 'Semester data not found for one or both students' });
-        }
-
-        // Compare results paper-wise
-        const comparison = semesterData1.results.map((result1, index) => {
-            const result2 = semesterData2.results[index];
-
-            // Initialize comparison data for this paper
-            const comparisonData = {
-                paperName: result1.paper,
-                student1TotalMarks: 0,
-                student2TotalMarks: 0,
-                marksDifference: 0
-            };
-
-            // Calculate total marks for both students (CIA + ESE)
-            result1.types.forEach((type1, i) => {
-                const type2 = result2.types[i];
-                comparisonData.student1TotalMarks += type1.ciamarksObtained + type1.esemarksObtained;
-                comparisonData.student2TotalMarks += type2.ciamarksObtained + type2.esemarksObtained;
-            });
-
-            // Calculate the difference in total marks
-            comparisonData.marksDifference = comparisonData.student1TotalMarks - comparisonData.student2TotalMarks;
-
-            return comparisonData;
-        });
-
-        // Send the comparison data in the response
-        res.json(comparison);
-
-    } catch (error) {
-        console.error('Error comparing results:', error);
-        res.status(500).json({ message: 'Error comparing results', error });
+    // Check if both students exist
+    if (!student1 || !student2) {
+      return res.status(404).json({
+        message: "One or both students not found or semester data missing",
+      })
     }
+
+    // Extract results for the specified semester
+    const semesterData1 = student1.semesters.find((s) => s.semester == semester)
+
+    const semesterData2 = student2.semesters.find((s) => s.semester == semester)
+
+    // Check if both students have results for the semester
+    if (!semesterData1 || !semesterData2) {
+      return res
+        .status(404)
+        .json({ message: "Semester data not found for one or both students" })
+    }
+
+    // Compare results paper-wise
+    const comparison = semesterData1.results.map((result1, index) => {
+      const result2 = semesterData2.results[index]
+
+      // Initialize comparison data for this paper
+      const comparisonData = {
+        paperName: result1.paper,
+        student1TotalMarks: 0,
+        student2TotalMarks: 0,
+        marksDifference: 0,
+      }
+
+      // Calculate total marks for both students (CIA + ESE)
+      result1.types.forEach((type1, i) => {
+        const type2 = result2.types[i]
+        comparisonData.student1TotalMarks +=
+          type1.ciamarksObtained + type1.esemarksObtained
+        comparisonData.student2TotalMarks +=
+          type2.ciamarksObtained + type2.esemarksObtained
+      })
+
+      // Calculate the difference in total marks
+      comparisonData.marksDifference =
+        comparisonData.student1TotalMarks - comparisonData.student2TotalMarks
+
+      return comparisonData
+    })
+
+    // Send the comparison data in the response
+    res.json(comparison)
+  } catch (error) {
+    console.error("Error comparing results:", error)
+    res.status(500).json({ message: "Error comparing results", error })
+  }
 }
 
+export const studentCount = async (req, res) => {
+  try {
+    const students = await Student.aggregate([
+      { $unwind: "$semesters" },
+      {
+        $group: {
+          _id: "$semesters.semester", // Group by semester
+          count: { $sum: 1 }, // Count students per semester
+        },
+      },
+      { $sort: { _id: 1 } }, // Sort by semester
+    ])
 
+    res.status(200).json(students)
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error fetching semester-wise count", error })
+  }
+}
 
+export const semesterPerformance = async (req, res) => {
+  try {
+    const performance = await Student.aggregate([
+      { $unwind: "$semesters" }, // Flatten semesters array
+      { $unwind: "$semesters.results" }, // Flatten results array
+      { $unwind: "$semesters.results.types" }, // Flatten types array
+      {
+        $group: {
+          _id: "$semesters.semester", // Group by semester
+          avgMarks: {
+            $avg: {
+              $sum: [
+                "$semesters.results.types.ciamarksObtained",
+                "$semesters.results.types.esemarksObtained",
+              ], // Sum of CIA and ESE marks
+            },
+          },
+        },
+      },
+      { $sort: { _id: 1 } }, // Sort by semester
+    ])
 
-
-
-
-
+    res.status(200).json(performance)
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error fetching semester-wise performance", error })
+  }
+}
