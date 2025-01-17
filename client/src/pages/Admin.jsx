@@ -262,8 +262,8 @@ const getTopStudent = async () => {
   return (
     <div className="p-6">
       {!isAuthenticated ? (
-        <div className="flex justify-center items-center min-h-screen bg-gray-50 px-4">
-          <div className="bg-gradient-to-r from-blue-50 via-blue-100 to-blue-50 shadow-md rounded-lg p-8 w-full max-w-md border border-blue-200">
+        <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-purple-600 to-blue-500 px-4 rounded-lg">
+          <div className="bg-white shadow-md rounded-lg p-8 w-full max-w-md border border-blue-200">
             <h2 className="text-2xl font-bold text-center text-blue-600 mb-6">
               Admin Login
             </h2>
