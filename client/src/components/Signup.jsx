@@ -1,28 +1,25 @@
 import React, { useState } from "react"
 import { toast } from "react-hot-toast"
-import { useNavigate } from "react-router-dom"
 import SummaryApi from "../common/SummaryApi" // Adjust import path if needed
 import { FaEye, FaEyeSlash } from "react-icons/fa" // Import eye icons
 
 const Signup = () => {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const [Email, setEmail] = useState("")
+  const [Password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
-  const [timer, setTimer] = useState(0) // Timer state
   const [passwordVisible, setPasswordVisible] = useState(false) // Password visibility toggle state
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false) // Confirm password visibility toggle state
-  const navigate = useNavigate() // Hook for navigation
   const handleSubmit = async (e) => {
     e.preventDefault()
 
     // Validate passwords match
-    if (password !== confirmPassword) {
+    if (Password !== confirmPassword) {
       toast.error("Passwords and confirm password not match!")
       return
     }
 
     try {
-      const response = await SummaryApi.signup(email, password)
+      const response = await SummaryApi.signup(Email, Password)
 
       if (response.status) {
         toast.success("Signup successful! You can now log in.")
@@ -30,18 +27,6 @@ const Signup = () => {
         setEmail("")
         setPassword("")
         setConfirmPassword("")
-        let timeLeft = 2 // Timer for 2 seconds
-        setTimer(timeLeft)
-
-        const interval = setInterval(() => {
-          timeLeft -= 1
-          setTimer(timeLeft)
-
-          if (timeLeft <= 0) {
-            clearInterval(interval)
-            navigate("/admin") // Redirect to admin page after 2 seconds
-          }
-        }, 1000)
       }
     } catch (error) {
       toast.error(error.response?.data?.message || "Error signing up.")
@@ -62,9 +47,11 @@ const Signup = () => {
             <input
               type="email"
               placeholder="Enter your email"
-              value={email}
+              value={Email}
+              required
               onChange={(e) => setEmail(e.target.value)}
               className="p-3 text-sm border border-gray-300 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+              autoComplete="off"
             />
           </div>
           <div>
@@ -75,9 +62,11 @@ const Signup = () => {
               <input
                 type={passwordVisible ? "text" : "password"}
                 placeholder="Enter your password"
-                value={password}
+                value={Password}
+                required
                 onChange={(e) => setPassword(e.target.value)}
                 className="p-3 text-sm border border-gray-300 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                autoComplete="off"
               />
               <button
                 type="button"
@@ -101,6 +90,7 @@ const Signup = () => {
                 type={confirmPasswordVisible ? "text" : "password"}
                 placeholder="Confirm your password"
                 value={confirmPassword}
+                required
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="p-3 text-sm border border-gray-300 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
               />
@@ -125,12 +115,6 @@ const Signup = () => {
           >
             Sign Up
           </button>
-          {timer > 0 && (
-            <p className="text-sm text-center mt-3 text-gray-500">
-              Redirecting to admin page in {timer} second
-              {timer !== 1 ? "s" : ""}
-            </p>
-          )}
         </form>
       </div>
     </div>
