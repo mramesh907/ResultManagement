@@ -7,6 +7,7 @@ import { FiLogOut } from "react-icons/fi"
 import Navbar from "./Navbar"
 import { FaFileUpload, FaDownload } from "react-icons/fa"
 import AdminCharts from "../components/AdminCharts"
+import Signup from "../components/Signup"
 const Admin = () => {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -15,6 +16,7 @@ const Admin = () => {
   )
   const [selectedSection, setSelectedSection] = useState("upload")
   const [file, setFile] = useState(null)
+  const [fileName, setFileName] = useState("")  
   const [marks, setMarks] = useState({})
   const [subject, setSubject] = useState("")
   const [semester, setSemester] = useState("")
@@ -30,6 +32,8 @@ const Admin = () => {
   const [topRankers, setTopRankers] = useState([])
 
   const [credits, setCredits] = useState({})
+
+
 
   const handleCreditChange = (e) => {
     setCredits({
@@ -64,6 +68,7 @@ const Admin = () => {
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0])
+    setFileName(e.target.files[0].name)
   }
 
   const handleSemesterChange = (e) => {
@@ -95,6 +100,7 @@ const Admin = () => {
       toast.error("Please select a file")
       return
     }
+   
     setUploading(true)
     const formData = new FormData()
     formData.append("file", file)
@@ -256,30 +262,53 @@ const getTopStudent = async () => {
   return (
     <div className="p-6">
       {!isAuthenticated ? (
-        <div>
-          <h2 className="text-2xl font-bold mb-4">Admin Authentication</h2>
-          <form onSubmit={handleLogin} className="mb-6">
-            <input
-              type="email"
-              placeholder="Enter Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="p-2 text-sm border border-gray-300 rounded w-full"
-            />
-            <input
-              type="password"
-              placeholder="Enter Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="p-2 text-sm border border-gray-300 rounded w-full mt-4"
-            />
-            <button
-              type="submit"
-              className="bg-blue-500 text-white p-2 text-sm rounded hover:bg-blue-600 w-full mt-4"
-            >
-              Login
-            </button>
-          </form>
+        <div className="flex justify-center items-center min-h-screen bg-gray-50 px-4">
+          <div className="bg-gradient-to-r from-blue-50 via-blue-100 to-blue-50 shadow-md rounded-lg p-8 w-full max-w-md border border-blue-200">
+            <h2 className="text-2xl font-bold text-center text-blue-600 mb-6">
+              Admin Login
+            </h2>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  placeholder="Enter Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="p-3 text-sm border border-gray-300 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  placeholder="Enter Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="p-3 text-sm border border-gray-300 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-blue-500 text-white p-3 rounded-lg text-sm font-medium shadow-md hover:shadow-lg transition duration-300"
+              >
+                Login
+              </button>
+            </form>
+            <p className="mt-6 text-center text-sm text-gray-600">
+              Forgot your password?{" "}
+              <a
+                href="/forgot-password"
+                className="text-blue-500 hover:underline"
+              >
+                Reset it here
+              </a>
+            </p>
+          </div>
         </div>
       ) : (
         <div>
@@ -303,7 +332,7 @@ const getTopStudent = async () => {
           {selectedSection === "upload" && (
             <div className="mb-6 p-6 bg-gray-50 rounded-lg shadow-md">
               <p className="text-2xl font-bold mb-4 text-center">
-                Upload Students Excel
+                Upload Students Result
               </p>
 
               {/* Demo File Download Button */}
@@ -332,6 +361,10 @@ const getTopStudent = async () => {
                   accept=".xlsx,.xls"
                   className="hidden"
                 />
+                {/* Display Selected File Name */}
+                <span className="ml-2 text-red-500 font-medium">
+                  {fileName ? fileName : "No file chosen"}
+                </span>
 
                 {/* Upload File Button */}
                 <button
@@ -373,6 +406,7 @@ const getTopStudent = async () => {
               )}
             </div>
           )}
+
           {/* Manual Marks Entry Section */}
           {selectedSection === "marks" && (
             <div className="mt-6">
@@ -478,7 +512,7 @@ const getTopStudent = async () => {
                         <span className="font-semibold">{ranker.name}</span> -{" "}
                         <span className="text-blue-600">
                           {ranker.highestMarks} Marks
-                        </span> {" "}
+                        </span>{" "}
                         <span>(StudentId: {ranker.studentId})</span>
                       </li>
                     ))}
@@ -501,6 +535,12 @@ const getTopStudent = async () => {
             <div className="mt-8">
               <h3 className="text-xl font-semibold mb-4">Analytics</h3>
               <AdminCharts /> {/* Render the pie charts here */}
+            </div>
+          )}
+          {selectedSection === "signup" && (
+            <div className="mt-8">
+              {/* <h3 className="text-xl font-semibold mb-4">Signup</h3> */}
+              <Signup /> {/* Render the signup form here */}
             </div>
           )}
         </div>

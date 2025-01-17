@@ -3,6 +3,7 @@ import App from "../App"
 import Home from "../pages/Home"
 import Student from "../pages/Student"
 import Admin from "../pages/Admin"
+import ForgotPassword from "../components/ForgotPassword"
 
 const router = createBrowserRouter([
   {
@@ -20,6 +21,10 @@ const router = createBrowserRouter([
       {
         path: "/admin",
         element: <Admin />,
+      },
+      {
+        path: "/forgot-password", // Add the new route
+        element: <ForgotPassword />, // Render ForgotPassword component
       },
     ],
   },

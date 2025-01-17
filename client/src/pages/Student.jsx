@@ -3,6 +3,8 @@ import { toast } from "react-hot-toast"
 import SummaryApi from "../common/SummaryApi.js"
 import generatePDF from "../utils/generatePDF.js" // Import the generatePDF function
 import StudentNavbar from "./StudentNavbar" // Import the StudentNavbar
+import ScholarshipList from "../components/ScholarshipList.jsx"
+import CompareStudent from "../components/CompareStudent.jsx"
 
 const Student = () => {
   const [studentId, setStudentId] = useState("")
@@ -144,12 +146,12 @@ const Student = () => {
       />
 
       {selectedSection === "marksheet" && (
-        <div className="mt-6 max-w-lg mx-auto p-6 bg-white rounded-lg shadow-lg">
+        <div className="mt-6 max-w-lg mx-auto p-6 bg-white rounded-lg shadow-lg border border-yellow-300 hover:shadow-2xl">
           <h2 className="text-3xl font-extrabold text-blue-800 mb-6 text-center">
             Student Panel
           </h2>
 
-          <div className="mb-6">
+          <div className="mb-6 ">
             {/* Student ID */}
             <label
               htmlFor="studentId"
@@ -231,7 +233,7 @@ const Student = () => {
       )}
 
       {selectedSection === "scholarships" && (
-        <div className="mt-6 max-w-3xl mx-auto p-6 bg-white rounded-lg shadow-lg border border-yellow-300">
+        <div className="mt-6 max-w-3xl mx-auto p-6 bg-white rounded-lg shadow-lg border border-yellow-300 hover:shadow-2xl">
           <h3 className="text-2xl font-bold mb-6 text-blue-700 text-center">
             Check for Eligible Scholarships
           </h3>
@@ -245,10 +247,16 @@ const Student = () => {
                 Enter CGPA:
               </label>
               <input
-                type="number"
+                type="text"
                 value={cgpa || ""}
                 id="cgpa"
-                onChange={(e) => setCGPA(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value
+                  // Allow only numbers and prevent empty values
+                  if (/^\d*$/.test(value)) {
+                    setCGPA(value)
+                  }
+                }}
                 placeholder="Enter CGPA"
                 className="p-3 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full bg-blue-50"
               />
@@ -261,10 +269,16 @@ const Student = () => {
                 Enter Family Income:
               </label>
               <input
-                type="number"
+                type="text"
                 id="familyIncome"
                 value={familyIncome || ""}
-                onChange={(e) => setFamilyIncome(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value
+                  // Allow only numbers and prevent empty values
+                  if (/^\d*$/.test(value)) {
+                    setFamilyIncome(value)
+                  }
+                }}
                 placeholder="Enter Family Income"
                 className="p-3 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full bg-blue-50"
               />
@@ -279,86 +293,13 @@ const Student = () => {
           </button>
 
           {/* Display Multiple Scholarships */}
-          {eligibleScholarships.length > 0 ? (
-            <div className="mt-6">
-              <h4 className="text-xl font-semibold text-blue-700 mb-4">
-                Eligible Scholarships
-              </h4>
-              <div className="space-y-6 bg-gray-100 rounded-lg p-6">
-                {eligibleScholarships.map((scholarship, idx) => (
-                  <div
-                    key={idx}
-                    className="bg-white shadow-lg rounded-lg p-6 hover:shadow-2xl transition duration-300"
-                  >
-                    <h5 className="font-semibold text-xl text-blue-600">
-                      {scholarship.name}
-                    </h5>
-                    <p className="text-gray-600 mt-2">
-                      {scholarship.description}
-                    </p>
-                    <div className="mt-4">
-                      <p>
-                        <strong className="text-gray-800">
-                          Reward Amount:
-                        </strong>{" "}
-                        {scholarship.rewardAmount} INR
-                      </p>
-                      <p>
-                        <strong className="text-gray-800">Eligibility:</strong>{" "}
-                        Min CGPA: {scholarship.eligibility.minCGPA}, Max Income:{" "}
-                        {scholarship.eligibility.maxIncome} INR
-                      </p>
-                      <p>
-                        <strong className="text-gray-800">Target Group:</strong>{" "}
-                        {scholarship.eligibility.targetGroup}
-                      </p>
-                      <p>
-                        <strong className="text-gray-800">
-                          Application Deadline:
-                        </strong>{" "}
-                        {new Date(
-                          scholarship.applicationDeadline
-                        ).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="mt-4">
-                      <a
-                        href={scholarship.applyLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-500 hover:text-blue-700 transition duration-200"
-                      >
-                        Apply Here
-                      </a>
-                    </div>
-                    <div className="mt-2">
-                      <p className="text-sm text-gray-500">
-                        <strong>Official Website:</strong>
-                        <a
-                          href={scholarship.officialWebsite}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-500 hover:text-blue-700"
-                        >
-                          {scholarship.officialWebsite}
-                        </a>
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <p className="mt-6 text-gray-500 text-lg text-center">
-              No eligible scholarships found for the given criteria.
-            </p>
-          )}
+          <ScholarshipList eligibleScholarships={eligibleScholarships} />
         </div>
       )}
 
       {/* Comparison Section */}
       {selectedSection === "comparison" && (
-        <div className="mb-6 max-w-3xl mx-auto p-6 bg-white rounded-lg shadow-xl border border-yellow-300 mt-4">
+        <div className="mb-6 max-w-3xl mx-auto p-6 bg-white rounded-lg shadow-xl border border-yellow-300 mt-4 hover:shadow-2xl">
           <h3 className="text-2xl font-semibold mb-6 text-blue-700 text-center">
             Compare Students
           </h3>
@@ -374,7 +315,7 @@ const Student = () => {
                 value={studentId1 || ""}
                 onChange={(e) => setStudentId1(e.target.value)}
                 placeholder="Enter Student ID 1"
-                className="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full bg-blue-50 "
+                className="p-3 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full bg-blue-50"
               />
             </div>
 
@@ -388,7 +329,7 @@ const Student = () => {
                 value={studentId2 || ""}
                 onChange={(e) => setStudentId2(e.target.value)}
                 placeholder="Enter Student ID 2"
-                className="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full bg-blue-50"
+                className="p-3 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full bg-blue-50"
               />
             </div>
           </div>
@@ -403,7 +344,7 @@ const Student = () => {
               value={compsemester || ""}
               onChange={(e) => setCompSemester(e.target.value)}
               placeholder="Enter Semester"
-              className="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-1/2 bg-blue-50"
+              className="p-3 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-1/2 bg-blue-50"
             />
           </div>
 
@@ -416,58 +357,7 @@ const Student = () => {
           </button>
 
           {/* Display Comparison Data */}
-          {comparisonData && comparisonData.length > 0 ? (
-            <div className="mt-6">
-              <h4 className="text-lg font-semibold mb-4 text-blue-700">
-                Comparison Results:
-              </h4>
-              <div className="overflow-x-auto">
-                <table className="min-w-full border-collapse border border-gray-200 rounded-lg shadow-lg">
-                  <thead className="bg-gray-100">
-                    <tr>
-                      <th className="border border-gray-200 px-4 py-2 text-left">
-                        Paper Name
-                      </th>
-                      <th className="border border-gray-200 px-4 py-2 text-left">
-                        Student 1 Total Marks
-                      </th>
-                      <th className="border border-gray-200 px-4 py-2 text-left">
-                        Student 2 Total Marks
-                      </th>
-                      <th className="border border-gray-200 px-4 py-2 text-left">
-                        Marks Difference
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {comparisonData.map((paper, index) => (
-                      <tr
-                        key={index}
-                        className={`hover:bg-gray-200 ${index % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
-                      >
-                        <td className="border border-gray-200 px-4 py-2">
-                          {paper.paperName}
-                        </td>
-                        <td className="border border-gray-200 px-4 py-2">
-                          {paper.student1TotalMarks}
-                        </td>
-                        <td className="border border-gray-200 px-4 py-2">
-                          {paper.student2TotalMarks}
-                        </td>
-                        <td className="border border-gray-200 px-4 py-2">
-                          {paper.marksDifference}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          ) : (
-            <p className="mt-4 text-gray-500 text-center">
-              No comparison data available.
-            </p>
-          )}
+          <CompareStudent comparisonData={comparisonData} />
         </div>
       )}
     </div>

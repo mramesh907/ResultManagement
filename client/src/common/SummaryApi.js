@@ -45,6 +45,10 @@ const SummaryApi = {
     return apiRequest("/api/auth/signin", "POST", { email, password }, true) // Pass true for signin
   },
 
+  signup: async (email, password) => {    
+    return apiRequest("/api/auth/signup", "POST", { email, password })
+  },
+
   // Upload student data
   resultsUpload: async (studentData) => {
     return apiRequest("/api/students/import", "POST", studentData)
@@ -118,7 +122,17 @@ const SummaryApi = {
   },
   getSemesterWisePerformance: async () => {
     return apiRequest("/api/students/admin/semester-wise-performance", "GET")
-  } 
+  },
+  checkEmail: async (email) => {
+    
+    return apiRequest(`/api/auth/check-email`, "POST", { email }) // Send email in body
+  },
+  resetPassword: async (email, newPassword) => {
+    return apiRequest(`/api/auth/change-password`, "POST", {
+      email,
+      newPassword,
+    }) // Send email and password in body
+  },
 }
 
 export default SummaryApi
