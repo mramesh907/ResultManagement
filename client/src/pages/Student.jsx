@@ -16,9 +16,9 @@ const Student = () => {
   const [cgpa, setCGPA] = useState(null)
   const [familyIncome, setFamilyIncome] = useState("")
   const [eligibleScholarships, setEligibleScholarships] = useState([])
-   const [studentId1, setStudentId1] = useState("")
-   const [studentId2, setStudentId2] = useState("")
-   const [compsemester, setCompSemester] = useState("")
+  const [studentId1, setStudentId1] = useState("")
+  const [studentId2, setStudentId2] = useState("")
+  const [compsemester, setCompSemester] = useState("")
   const [selectedSection, setSelectedSection] = useState("marksheet") // New state to track the selected section
   const [comparisonData, setComparisonData] = useState([])
 
@@ -53,12 +53,11 @@ const Student = () => {
       setGPA(null)
       setFetchAttempted(true)
       toast.dismiss()
-      if(error.response && error.response.status === 404){
+      if (error.response && error.response.status === 404) {
         toast.error("No data found for this student and semester.")
-      }else{
+      } else {
         toast.error("Error fetching data. Please try again later.")
       }
-      
     } finally {
       setLoading(false)
       setStudentId("")
@@ -77,15 +76,14 @@ const Student = () => {
       toast.error("Please enter both CGPA and Family Income.")
       return
     }
-    if(cgpa > 10 || cgpa < 0){
+    if (cgpa > 10 || cgpa < 0) {
       toast.error("CGPA must be between 0 and 10.")
       return
     }
-    if(familyIncome < 0){
+    if (familyIncome < 0) {
       toast.error("Family Income must be a positive number.")
       return
     }
-
 
     try {
       const scholarshipResponse = await SummaryApi.getEligibleScholarships(
@@ -94,18 +92,14 @@ const Student = () => {
       )
       setEligibleScholarships(scholarshipResponse)
     } catch (error) {
-      if(error.response && error.response.status === 404){
+      if (error.response && error.response.status === 404) {
         setEligibleScholarships([])
         toast.error("No eligible scholarships found.")
-      }else{
+      } else {
         toast.error("Error fetching scholarships. Please try again later.")
       }
-      
     }
   }
-
-
-
 
   const compareStudents = async () => {
     if (!studentId1 || !studentId2 || !compsemester) {
@@ -118,8 +112,8 @@ const Student = () => {
         studentId2,
         compsemester
       )
-      console.log("Comparison Response:", comparisonResponse);
-      
+      console.log("Comparison Response:", comparisonResponse)
+
       if (comparisonResponse && comparisonResponse.length > 0) {
         setComparisonData(comparisonResponse)
         toast.success("Comparison results fetched successfully!")
@@ -129,9 +123,9 @@ const Student = () => {
       }
     } catch (error) {
       setComparisonData(null)
-      if(error.response && error.response.status === 404){
+      if (error.response && error.response.status === 404) {
         toast.error("No comparison data found.")
-      }else{
+      } else {
         toast.error("Error fetching comparison data. Please try again later.")
       }
     }

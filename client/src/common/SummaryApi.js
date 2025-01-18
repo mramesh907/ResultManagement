@@ -27,15 +27,14 @@ const apiRequest = async (url, method, data = null, isSignIn = false) => {
     return response.data // Return the response data
   } catch (error) {
     // console.log("API Error:", error.response.data.message)
-    
+
     // // Check if the error response exists (error from the backend)
     // const errorMessage =
     //   error.response && error.response.data
     //     ? error.response.data.error || error.response.data.message
     //     : error.message // Fallback to general error message
-        
-        
-    throw  error // Re-throw with error message
+
+    throw error // Re-throw with error message
   }
 }
 
@@ -45,7 +44,7 @@ const SummaryApi = {
     return apiRequest("/api/auth/signin", "POST", { email, password }, true) // Pass true for signin
   },
 
-  signup: async (email, password) => {    
+  signup: async (email, password) => {
     return apiRequest("/api/auth/signup", "POST", { email, password })
   },
 
@@ -124,7 +123,6 @@ const SummaryApi = {
     return apiRequest("/api/students/admin/semester-wise-performance", "GET")
   },
   checkEmail: async (email) => {
-    
     return apiRequest(`/api/auth/check-email`, "POST", { email }) // Send email in body
   },
   resetPassword: async (email, newPassword) => {

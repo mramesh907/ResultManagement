@@ -16,7 +16,7 @@ const Admin = () => {
   )
   const [selectedSection, setSelectedSection] = useState("upload")
   const [file, setFile] = useState(null)
-  const [fileName, setFileName] = useState("")  
+  const [fileName, setFileName] = useState("")
   const [marks, setMarks] = useState({})
   const [subject, setSubject] = useState("")
   const [semester, setSemester] = useState("")
@@ -32,8 +32,6 @@ const Admin = () => {
   const [topRankers, setTopRankers] = useState([])
 
   const [credits, setCredits] = useState({})
-
-
 
   const handleCreditChange = (e) => {
     setCredits({
@@ -54,7 +52,7 @@ const Admin = () => {
       if (error.response && error.response.data) {
         toast.error(error.response.data.message)
         return
-      }else{
+      } else {
         toast.error("Login failed. Please check your credentials.")
       }
     }
@@ -100,7 +98,7 @@ const Admin = () => {
       toast.error("Please select a file")
       return
     }
-   
+
     setUploading(true)
     const formData = new FormData()
     formData.append("file", file)
@@ -122,7 +120,7 @@ const Admin = () => {
       if (error.response && error.response.data) {
         toast.error(error.response.data.message)
         return
-      }else{
+      } else {
         toast.error("Error uploading file. Please try again later.")
       }
     } finally {
@@ -147,10 +145,9 @@ const Admin = () => {
       setStudentExists(false)
       if (error.response && error.response.data) {
         toast.error(error.response.data.message)
-      }else{
+      } else {
         toast.error("Error checking student existence")
       }
-
     }
   }
 
@@ -191,73 +188,72 @@ const Admin = () => {
       if (error.response && error.response.data) {
         toast.error(error.response.data.message)
         return
-      }else{
+      } else {
         toast.error("Error submitting marks")
       }
     }
   }
 
   // Get top student
-const getTopStudent = async () => {
-  if (!semester) {
-    toast.error("Please select a semester!")
-    return
-  }
+  const getTopStudent = async () => {
+    if (!semester) {
+      toast.error("Please select a semester!")
+      return
+    }
 
-  try {
-    const response = await SummaryApi.getSemesterResults(semester)
+    try {
+      const response = await SummaryApi.getSemesterResults(semester)
 
-    if (response) {
-      const { name, totalMarks, studentId, semester: semesterData } = response
+      if (response) {
+        const { name, totalMarks, studentId, semester: semesterData } = response
 
-      // Check if semester matches and extract results
-      if (semesterData && semesterData.semester === semester) {
-        const topStudent = {
-          name,
-          studentId,
-          totalMarks,
-          semester: semesterData.semester,
-          results: semesterData.results, // Correctly accessing results
+        // Check if semester matches and extract results
+        if (semesterData && semesterData.semester === semester) {
+          const topStudent = {
+            name,
+            studentId,
+            totalMarks,
+            semester: semesterData.semester,
+            results: semesterData.results, // Correctly accessing results
+          }
+
+          setTopStudent(topStudent)
+          toast.success("Top student data retrieved successfully!")
+        } else {
+          setTopStudent(null)
+          toast.error("No top student found for the selected semester.")
         }
-
-        setTopStudent(topStudent)
-        toast.success("Top student data retrieved successfully!")
       } else {
         setTopStudent(null)
         toast.error("No top student found for the selected semester.")
       }
-    } else {
+    } catch (error) {
       setTopStudent(null)
-      toast.error("No top student found for the selected semester.")
-    }
-  } catch (error) {
-    setTopStudent(null)
-    if (error.response && error.response.status === 404) {
-      toast.error("No top student found for the selected semester.")
-    }else{
-      toast.error("Error fetching top student data.")
+      if (error.response && error.response.status === 404) {
+        toast.error("No top student found for the selected semester.")
+      } else {
+        toast.error("Error fetching top student data.")
+      }
     }
   }
-}
 
   // Get top rankers
- const getTopRankers = async () => {
-   try {
-     const response = await SummaryApi.getTopRankers()
+  const getTopRankers = async () => {
+    try {
+      const response = await SummaryApi.getTopRankers()
 
-     if (response && response.rankers) {
-       // Setting the top rankers data to state
-       setTopRankers(response.rankers)
-       toast.success("Top 5 rankers fetched successfully!")
-     } else {
-       setTopRankers([])
-       toast.error("No rankers found.")
-     }
-   } catch (error) {
-     toast.error("Error fetching top rankers.")
-   }
- }
-
+      if (response && response.rankers) {
+        // Setting the top rankers data to state
+        setTopRankers(response.rankers)
+        toast.success("Top 5 rankers fetched successfully!")
+      } else {
+        setTopRankers([])
+        toast.error("No rankers found.")
+      }
+    } catch (error) {
+      toast.error("Error fetching top rankers.")
+    }
+  }
 
   return (
     <div className="p-6">

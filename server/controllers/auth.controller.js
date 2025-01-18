@@ -8,7 +8,6 @@ export const signup = async (req, res) => {
   const { email, password } = req.body
 
   try {
-    
     // Check if user already exists
     const userExists = await User.findOne({ email })
     if (userExists) {
@@ -28,25 +27,25 @@ export const signup = async (req, res) => {
     // Save the new user to the database
     await newUser.save()
 
-    res.status(201).json({ status: true,message: "User registered successfully" })
+    res
+      .status(201)
+      .json({ status: true, message: "User registered successfully" })
   } catch (err) {
-
     res.status(500).json({ message: "Server error Ramesh" })
   }
 }
 
 // Sign-in Route (Login)
 export const signin = async (req, res) => {
- 
   try {
-     const { email, password } = req.body
-     if (!email || !password) {
-       return res.status(400).json({
-         message: "Email and password are required",
-         error: true,
-         success: false,
-       })
-     }
+    const { email, password } = req.body
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "Email and password are required",
+        error: true,
+        success: false,
+      })
+    }
     const user = await User.findOne({ email })
 
     if (!user) {
@@ -73,40 +72,40 @@ export const signin = async (req, res) => {
 
 // Forget Password Route
 export const forgetPassword = async (req, res) => {
-  const { email } = req.body;
+  const { email } = req.body
 
   try {
     // Check if user exists
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email })
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "User not found" })
     }
 
     // Generate a reset token
-    const resetToken = crypto.randomBytes(32).toString("hex");
-    const resetTokenExpiry = Date.now() + 3600000; // 1 hour expiry
+    const resetToken = crypto.randomBytes(32).toString("hex")
+    const resetTokenExpiry = Date.now() + 3600000 // 1 hour expiry
 
     // Save the reset token and expiry to the user's document
-    user.resetPasswordToken = resetToken;
-    user.resetPasswordExpires = resetTokenExpiry;
-    await user.save();
+    user.resetPasswordToken = resetToken
+    user.resetPasswordExpires = resetTokenExpiry
+    await user.save()
 
     res.status(200).json({
       message: "Password reset token generated",
       resetToken, // For testing purposes; in production, don't return the token here.
-    });
+    })
   } catch (err) {
-    console.error("Error generating reset token:", err);
-    res.status(500).json({ message: "Server error" });
+    console.error("Error generating reset token:", err)
+    res.status(500).json({ message: "Server error" })
   }
-};
+}
 
 // Reset Password Route
 export const resetPassword = async (req, res) => {
-  const { resetToken, newPassword, confirmPassword } = req.body;
+  const { resetToken, newPassword, confirmPassword } = req.body
 
   if (newPassword !== confirmPassword) {
-    return res.status(400).json({ message: "Passwords do not match" });
+    return res.status(400).json({ message: "Passwords do not match" })
   }
 
   try {
@@ -114,29 +113,28 @@ export const resetPassword = async (req, res) => {
     const user = await User.findOne({
       resetPasswordToken: resetToken,
       resetPasswordExpires: { $gt: Date.now() },
-    });
+    })
 
     if (!user) {
-      return res.status(400).json({ message: "Invalid or expired reset token" });
+      return res.status(400).json({ message: "Invalid or expired reset token" })
     }
 
     // Hash the new password
-    const salt = await bcryptjs.genSalt(10);
-    const hashedPassword = await bcryptjs.hash(newPassword, salt);
+    const salt = await bcryptjs.genSalt(10)
+    const hashedPassword = await bcryptjs.hash(newPassword, salt)
 
     // Update the user's password and clear the reset token and expiry
-    user.password = hashedPassword;
-    user.resetPasswordToken = null;
-    user.resetPasswordExpires = null;
+    user.password = hashedPassword
+    user.resetPasswordToken = null
+    user.resetPasswordExpires = null
 
-    await user.save();
+    await user.save()
 
-    res.status(200).json({ message: "Password updated successfully" });
+    res.status(200).json({ message: "Password updated successfully" })
   } catch (err) {
-    
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error" })
   }
-};
+}
 
 // Check Email for forget password
 export const checkEmailExists = async (req, res) => {
@@ -151,18 +149,18 @@ export const checkEmailExists = async (req, res) => {
 
     res
       .status(200)
-      .json({ status: true,message: "Email exists, proceed to change password" })
+      .json({
+        status: true,
+        message: "Email exists, proceed to change password",
+      })
   } catch (err) {
-    
     res.status(500).json({ message: "Server error" })
   }
 }
 
-
 // Change Password
 export const changePassword = async (req, res) => {
   const { email, newPassword } = req.body
-
 
   try {
     const user = await User.findOne({ email })
@@ -182,7 +180,6 @@ export const changePassword = async (req, res) => {
       .status(200)
       .json({ status: true, message: "Password changed successfully" })
   } catch (err) {
-    
     res.status(500).json({ message: "Server error" })
   }
 }

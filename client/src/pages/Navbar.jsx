@@ -12,26 +12,31 @@ const Navbar = ({ onSelectSection, selectedSection }) => {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex space-x-4">
-            {["upload", "marks", "topStudent", "scholarships", "charts", "signup"].map(
-              (section) => (
-                <div
-                  key={section}
-                  onClick={() => onSelectSection(section)}
-                  className={`cursor-pointer px-4 py-2 rounded ${
-                    selectedSection === section
-                      ? "bg-white text-black shadow-md"
-                      : "hover:bg-white hover:text-black"
-                  }`}
-                >
-                  {section === "upload" && "Upload Students"}
-                  {section === "marks" && "Manual Marks Entry"}
-                  {section === "topStudent" && "Top Student"}
-                  {section === "scholarships" && "Manage Scholarships"}
-                  {section === "charts" && "Admin Charts"}
-                  {section === "signup" && "Signup"}
-                </div>
-              )
-            )}
+            {[
+              "upload",
+              "marks",
+              "topStudent",
+              "scholarships",
+              "charts",
+              "signup",
+            ].map((section) => (
+              <div
+                key={section}
+                onClick={() => onSelectSection(section)}
+                className={`cursor-pointer px-4 py-2 rounded ${
+                  selectedSection === section
+                    ? "bg-white text-black shadow-md"
+                    : "hover:bg-white hover:text-black"
+                }`}
+              >
+                {section === "upload" && "Upload Students"}
+                {section === "marks" && "Manual Marks Entry"}
+                {section === "topStudent" && "Top Student"}
+                {section === "scholarships" && "Manage Scholarships"}
+                {section === "charts" && "Admin Charts"}
+                {section === "signup" && "Signup"}
+              </div>
+            ))}
           </div>
 
           {/* Mobile Menu Button */}
@@ -64,29 +69,34 @@ const Navbar = ({ onSelectSection, selectedSection }) => {
       {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden bg-purple-600 px-4 py-6 space-y-4">
-          {["upload", "marks", "topStudent", "scholarships", "charts", "signup"].map(
-            (section) => (
-              <div
-                key={section}
-                onClick={() => {
-                  onSelectSection(section)
-                  setIsOpen(false) // Close menu after selection
-                }}
-                className={`cursor-pointer px-4 py-2 rounded ${
-                  selectedSection === section
-                    ? "bg-white text-black shadow-md"
-                    : "hover:bg-white hover:text-black"
-                }`}
-              >
-                {section === "upload" && "Upload Students"}
-                {section === "marks" && "Manual Marks Entry"}
-                {section === "topStudent" && "Top Student"}
-                {section === "scholarships" && "Manage Scholarships"}
-                {section === "charts" && "Admin Charts"}
-                {section === "signup" && "Signup"}
-              </div>
-            )
-          )}
+          {[
+            "upload",
+            "marks",
+            "topStudent",
+            "scholarships",
+            "charts",
+            "signup",
+          ].map((section) => (
+            <div
+              key={section}
+              onClick={() => {
+                onSelectSection(section)
+                setIsOpen(false) // Close menu after selection
+              }}
+              className={`cursor-pointer px-4 py-2 rounded ${
+                selectedSection === section
+                  ? "bg-white text-black shadow-md"
+                  : "hover:bg-white hover:text-black"
+              }`}
+            >
+              {section === "upload" && "Upload Students"}
+              {section === "marks" && "Manual Marks Entry"}
+              {section === "topStudent" && "Top Student"}
+              {section === "scholarships" && "Manage Scholarships"}
+              {section === "charts" && "Admin Charts"}
+              {section === "signup" && "Signup"}
+            </div>
+          ))}
         </div>
       )}
     </nav>

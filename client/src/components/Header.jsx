@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react"
 import { NavLink, useLocation } from "react-router-dom"
-import {toast} from "react-hot-toast"
+import { toast } from "react-hot-toast"
 import { FaHome, FaUser, FaBars, FaTimes } from "react-icons/fa" // Importing icons
 import { RiAdminFill } from "react-icons/ri"
 import logo from "../assets/Midnapore_College_logo.png"

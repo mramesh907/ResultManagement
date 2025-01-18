@@ -151,7 +151,9 @@ const ManualMarksEntry = () => {
       })
     } catch (err) {
       console.error("Error updating marks:", err)
-      setError("An error occurred while updating marks. Or Student ID does not exist.")
+      setError(
+        "An error occurred while updating marks. Or Student ID does not exist."
+      )
       setMessage("")
     }
   }

@@ -36,7 +36,6 @@ export const addScholarship = async (req, res) => {
         .json({ message: "Scholarship updated successfully!" })
     }
 
-
     // Create a new scholarship document
     const newScholarship = new Scholarship({
       name,
@@ -89,4 +88,3 @@ export const getEligibleScholarships = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch eligible scholarships" })
   }
 }
-

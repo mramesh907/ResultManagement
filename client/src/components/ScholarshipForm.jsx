@@ -56,7 +56,7 @@ const ScholarshipForm = () => {
         officialWebsite: "",
       })
     } catch (error) {
-        toast.error("Failed to add scholarship")
+      toast.error("Failed to add scholarship")
     }
   }
 
