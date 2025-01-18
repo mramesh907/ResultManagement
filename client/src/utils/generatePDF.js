@@ -1,6 +1,5 @@
 import jsPDF from "jspdf"
 import "jspdf-autotable"
-
 // Function to generate the student data PDF
 const generatePDF = (semesterData, gpa, preview = false) => {
   // console.log(gpa)
@@ -19,31 +18,55 @@ const generatePDF = (semesterData, gpa, preview = false) => {
   }
 
   const doc = new jsPDF()
-  const marginLeft = 20
-  let currentY = 20
+  const marginLeft = 10
+  let currentY = 10
 
   // Add logo to the header
   const logo = new Image()
-  logo.src = "/favicon.png" // Replace with your logo path
+  logo.src = "/Midnapore_College.png" // Replace with your logo path
   doc.addImage(logo, "PNG", marginLeft, currentY, 20, 20)
 
   // Header Section
   doc.setFont("helvetica", "bold")
   doc.setFontSize(18)
+  // doc.setTextColor(4, 10, 61)
+  doc.setTextColor(0, 0, 128)
   doc.text("MIDNAPORE COLLEGE (AUTONOMOUS)", 105, currentY + 10, "center")
+  doc.setTextColor(0, 0, 0)
   doc.setFontSize(12)
+  doc.setTextColor(4, 10, 61) // Deep dark blue color
+
   doc.text(
     "Affiliated to Vidyasagar University, Midnapore, West Bengal - 721101",
     105,
-    currentY + 20,
+    currentY + 15,
+    "center"
+  )
+  doc.text("Statement of Marks/Grade", 105, currentY + 20, "center")
+  doc.setFontSize(12)
+  doc.text(
+    `End Semester Examination of Semester: ${
+      semesterData.semester.semester || "N/A"
+    }`,
+    105,
+    currentY + 25,
+    "center"
+  )
+
+  // semesterData.semester.semester
+  doc.text(`B.C.A with Single Major Subject`, 105, currentY + 30, "center")
+  doc.text(
+    `[ 4-Year Under Graduation Programme(CCFUP-NEP) ]`,
+    105,
+    currentY + 35,
     "center"
   )
   currentY += 30
   currentY = checkAndAddPage(doc, currentY)
-  doc.text("AICTE APPROVED", 105, currentY, "center")
-  doc.line(20, currentY + 5, 190, currentY + 5)
-  currentY += 15
-
+  doc.text("AICTE APPROVED", 105, currentY + 10, "center")
+  doc.line(20, currentY + 10, 190, currentY + 12)
+  currentY += 17
+  doc.setTextColor(0, 0, 0) // Deep dark blue color
   // Student Details
   doc.setFont("helvetica", "normal")
   doc.text(
@@ -59,18 +82,10 @@ const generatePDF = (semesterData, gpa, preview = false) => {
     marginLeft,
     currentY + 10
   )
-  
-  doc.text(`No: ${semesterData.no || "N/A"}`, 120, currentY)
-  currentY += 20
 
-  // Semester Results Header
-  doc.setFontSize(16)
-  doc.text(
-    `Student Results for Semester ${semesterData.semester.semester || "N/A"}`,
-    marginLeft,
-    currentY
-  )
-  currentY += 10
+  doc.text(`No: ${semesterData.no || "N/A"}`, 120, currentY)
+  doc.text(`Course: BCA`, 120, currentY + 10)
+  currentY += 20
 
   // Table Data Preparation
   const tableHeaders = [
@@ -134,7 +149,7 @@ const generatePDF = (semesterData, gpa, preview = false) => {
         grade,
         gradePoints,
         type.credit || "N/A",
-        creditPoints.toFixed(2),
+        creditPoints,
       ])
     })
   })
@@ -316,10 +331,6 @@ const generatePDF = (semesterData, gpa, preview = false) => {
       ]
     })
 
-
-
-
-
   doc.text(
     `Grand Total Marks: ${totalFullMarks}`,
     marginLeft,
@@ -361,14 +372,13 @@ const generatePDF = (semesterData, gpa, preview = false) => {
     "Percentage Obtained",
   ]
 
-  
   // Add Summary Table to PDF
   currentY = checkAndAddPage(doc, currentY)
   doc.setFontSize(14)
-  currentY += 10
+  currentY += 4
 
   doc.text("Summary", marginLeft, currentY)
-  currentY += 10
+  currentY += 4
   currentY = checkAndAddPage(doc, currentY)
 
   doc.autoTable({
@@ -409,10 +419,15 @@ const generatePDF = (semesterData, gpa, preview = false) => {
   currentY = checkAndAddPage(doc, currentY)
 
   doc.text("Verified by:", marginLeft, currentY)
-  doc.text("Controller of Examinations", marginLeft, currentY + 10)
+  const signatureImage = new Image()
+  signatureImage.src = "/signature2.png" // Path to the signature image
+  doc.addImage(signatureImage, "PNG", marginLeft + 20, currentY - 15, 20, 20) // Adjust the position and size
+
+  // doc.text("Controller of Examinations", marginLeft, currentY + 10)
 
   // Check and add page if necessary
   currentY = checkAndAddPage(doc, currentY)
+  doc.addImage(signatureImage, "PNG", 140, currentY - 20, 20, 20)
   doc.text("Teacher-in-Charge", 140, currentY)
   doc.text("Chief Controller of Examinations", 140, currentY + 10)
   if (preview) {

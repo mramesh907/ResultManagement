@@ -33,7 +33,6 @@ const apiRequest = async (url, method, data = null, isSignIn = false) => {
     //   error.response && error.response.data
     //     ? error.response.data.error || error.response.data.message
     //     : error.message // Fallback to general error message
-
     throw error // Re-throw with error message
   }
 }
@@ -46,6 +45,10 @@ const SummaryApi = {
 
   signup: async (email, password) => {
     return apiRequest("/api/auth/signup", "POST", { email, password })
+  },
+  addStudent: async (studentData) => {
+    return apiRequest("/api/students/add-student", "POST", studentData)
+    // http://localhost:8080/api/students/add-student
   },
 
   // Upload student data

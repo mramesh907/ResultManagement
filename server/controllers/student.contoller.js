@@ -12,11 +12,11 @@ const __dirname = path.dirname(__filename)
 // Add a new student
 export const addNewStudent = async (req, res) => {
   try {
-    const { studentId, name, roll, registrationNo, session, year, semesters } =
+    const { studentId, name, roll,no, registrationNo, session, year, semesters } =
       req.body
-
+    console.log(req.body)
     // Validate required fields
-    if (!studentId || !name || !roll || !registrationNo || !session || !year) {
+    if (!studentId || !name || !roll || !no || !registrationNo || !session || !year) {
       return res
         .status(400)
         .json({ error: "All required fields must be filled." })
@@ -35,6 +35,7 @@ export const addNewStudent = async (req, res) => {
       studentId,
       name,
       roll,
+      no,
       registrationNo,
       session,
       year,

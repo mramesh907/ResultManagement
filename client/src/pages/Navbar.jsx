@@ -29,11 +29,11 @@ const Navbar = ({ onSelectSection, selectedSection }) => {
                     : "hover:bg-white hover:text-black"
                 }`}
               >
-                {section === "upload" && "Upload Students"}
+                {section === "upload" && "Upload Results"}
                 {section === "marks" && "Manual Marks Entry"}
-                {section === "topStudent" && "Top Student"}
+                {section === "topStudent" && "Top Student & Rankers"}
                 {section === "scholarships" && "Manage Scholarships"}
-                {section === "charts" && "Admin Charts"}
+                {section === "charts" && "Student Leaderboard"}
                 {section === "signup" && "Signup"}
               </div>
             ))}
@@ -89,11 +89,11 @@ const Navbar = ({ onSelectSection, selectedSection }) => {
                   : "hover:bg-white hover:text-black"
               }`}
             >
-              {section === "upload" && "Upload Students"}
+              {section === "upload" && "Upload Results"}
               {section === "marks" && "Manual Marks Entry"}
-              {section === "topStudent" && "Top Student"}
+              {section === "topStudent" && "Top Student & Rankers"}
               {section === "scholarships" && "Manage Scholarships"}
-              {section === "charts" && "Admin Charts"}
+              {section === "charts" && "Student Leaderboard"}
               {section === "signup" && "Signup"}
             </div>
           ))}

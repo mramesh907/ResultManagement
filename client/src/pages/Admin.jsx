@@ -414,12 +414,12 @@ const Admin = () => {
           {selectedSection === "topStudent" && (
             <div className="mt-8">
               {/* Title for Top Student */}
-              <h3 className="text-2xl font-semibold text-gray-800 mb-6">
+              <h3 className="text-3xl font-semibold text-gray-900 mb-8">
                 Check Top Student
               </h3>
 
               {/* Semester Selection */}
-              <div className="mb-6 flex items-center space-x-4">
+              <div className="mb-8 flex items-center space-x-6">
                 <select
                   onChange={handleSemesterChange}
                   className="p-3 text-sm border border-gray-300 rounded-lg w-1/2 focus:ring-2 focus:ring-blue-500 shadow-sm"
@@ -433,7 +433,7 @@ const Admin = () => {
                 </select>
                 <button
                   onClick={getTopStudent}
-                  className="bg-blue-500 text-white p-3 text-sm rounded-lg hover:bg-blue-600 transition-all duration-300 w-1/3"
+                  className="bg-blue-600 text-white p-3 text-sm rounded-lg hover:bg-blue-700 transition-all duration-300 w-1/3"
                 >
                   Get Top Student
                 </button>
@@ -441,43 +441,58 @@ const Admin = () => {
 
               {/* Top Student Details */}
               {topStudent && (
-                <div className="mt-6 p-6 bg-white shadow-xl rounded-lg border-t-4 border-blue-500">
-                  <h4 className="text-2xl font-bold text-blue-600 mb-2">
+                <div className="mt-8 p-8 bg-white shadow-lg rounded-xl border-t-4 border-blue-600">
+                  <h4 className="text-3xl font-bold text-blue-600 mb-4">
                     {topStudent.name}
                   </h4>
-                  <p className="text-sm text-gray-700">
-                    Student ID: {topStudent.studentId}
+                  <p className="text-lg text-gray-700 mb-2">
+                    <span className="font-semibold">Student ID:</span>{" "}
+                    {topStudent.studentId}
                   </p>
-                  <p className="text-sm text-gray-700">
-                    Total Marks: {topStudent.totalMarks}
+                  <p className="text-lg text-gray-700 mb-2">
+                    <span className="font-semibold">Total Marks:</span>{" "}
+                    {topStudent.totalMarks}
                   </p>
-                  <p className="text-sm text-gray-700">
-                    Semester: {topStudent.semester}
+                  <p className="text-lg text-gray-700 mb-4">
+                    <span className="font-semibold">Semester:</span>{" "}
+                    {topStudent.semester}
                   </p>
 
-                  <h5 className="text-lg font-semibold mt-4 text-gray-800">
+                  <h5 className="text-xl font-semibold text-gray-800 mb-4">
                     Results:
                   </h5>
                   {topStudent.results &&
                     topStudent.results.map((result, idx) => (
                       <div
                         key={idx}
-                        className="mt-4 p-4 bg-gray-50 border rounded-md"
+                        className="mt-6 p-6 bg-gray-50 border rounded-md shadow-sm"
                       >
-                        <h6 className="font-semibold text-gray-700">
+                        <h6 className="font-semibold text-gray-700 mb-2">
                           {result.subject} - {result.course}
                         </h6>
                         {result.types &&
                           result.types.map((type, i) => (
                             <div key={i} className="mt-3 text-sm text-gray-600">
-                              <p>Type: {type.type}</p>
-                              <p>Credits: {type.credit}</p>
                               <p>
-                                CIA Marks: {type.ciaMarks} (Obtained:{" "}
+                                <span className="font-semibold">Type:</span>{" "}
+                                {type.type}
+                              </p>
+                              <p>
+                                <span className="font-semibold">Credits:</span>{" "}
+                                {type.credit}
+                              </p>
+                              <p>
+                                <span className="font-semibold">
+                                  CIA Marks:
+                                </span>{" "}
+                                {type.ciaMarks} (Obtained:{" "}
                                 {type.ciamarksObtained})
                               </p>
                               <p>
-                                ESE Marks: {type.eseMarks} (Obtained:{" "}
+                                <span className="font-semibold">
+                                  ESE Marks:
+                                </span>{" "}
+                                {type.eseMarks} (Obtained:{" "}
                                 {type.esemarksObtained})
                               </p>
                             </div>
@@ -488,28 +503,31 @@ const Admin = () => {
               )}
 
               {/* Top Rankers Section */}
-              <h3 className="text-2xl font-semibold text-gray-800 mb-6">
+              <h3 className="text-3xl font-semibold text-gray-900 mt-12 mb-6">
                 Top Rankers
               </h3>
               <button
                 onClick={getTopRankers}
-                className="bg-blue-500 text-white p-3 text-sm rounded-lg hover:bg-blue-600 transition-all duration-300 w-full"
+                className="bg-blue-600 text-white p-3 text-sm rounded-lg hover:bg-blue-700 transition-all duration-300 w-full"
               >
                 Get Top Rankers
               </button>
+
               {topRankers.length > 0 && (
-                <div className="mt-4 p-4 bg-gray-100 border rounded-lg">
-                  <h4 className="font-semibold text-gray-800 mb-4">
+                <div className="mt-8 p-6 bg-gray-100 rounded-lg shadow-md">
+                  <h4 className="font-semibold text-xl text-gray-800 mb-6">
                     Top Rankers:
                   </h4>
-                  <ul className="list-disc pl-6 space-y-2">
+                  <ul className="list-disc pl-6 space-y-4">
                     {topRankers.map((ranker, idx) => (
                       <li key={idx} className="text-gray-700">
                         <span className="font-semibold">{ranker.name}</span> -{" "}
                         <span className="text-blue-600">
                           {ranker.highestMarks} Marks
                         </span>{" "}
-                        <span>(StudentId: {ranker.studentId})</span>
+                        <span className="text-gray-600">
+                          (Student ID: {ranker.studentId})
+                        </span>
                       </li>
                     ))}
                   </ul>
