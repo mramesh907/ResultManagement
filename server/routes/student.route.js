@@ -27,10 +27,12 @@ router.get("/calculate-cgpa/:studentId", calculateCGPA) // Calculate CGPA for a 
 router.get("/calculate-sgpa/:studentId", calculateSGPA) // Calculate SGPA for a student in a specific semester
 router.get("/calculate-cgpa-sgpa/:studentId", calculateCGPASGPA) // Calculate SGPA for a student in a specific semester
 router.get("/calculate-gpa/:studentId", calculateGPA) // Calculate SGPA for a student in a specific semester
-router.get("/compareResults/:studentId1/:studentId2/semester/:semester", getComparisonStudent)
+router.get(
+  "/compareResults/:studentId1/:studentId2/semester/:semester",
+  getComparisonStudent
+)
 router.get("/admin/semester-wise-count", studentCount)
 router.get("/admin/semester-wise-performance", semesterPerformance)
-
 
 // Protected routes (requires authentication or authorization)
 router.post("/add-student", addNewStudent) // Add a new student
