@@ -799,7 +799,7 @@ export const calculateSGPA = async (req, res) => {
   return res.status(200).json(sgpas)
 }
 
-//
+// Function to calculate CGPA and SGPA for a specific student
 export const calculateCGPASGPA = async (req, res) => {
   const { studentId } = req.params // Get the studentId from request params
 

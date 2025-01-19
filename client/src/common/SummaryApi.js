@@ -39,101 +39,34 @@ const apiRequest = async (url, method, data = null, isSignIn = false) => {
 
 // API Functions for student data operations
 const SummaryApi = {
-  signin: async (email, password) => {
-    return apiRequest("/api/auth/signin", "POST", { email, password }, true) // Pass true for signin
-  },
+  // Authentication
+  signin: async (email, password) => apiRequest("/api/auth/signin", "POST", { email, password }, true),
+  signup: async (email, password) => apiRequest("/api/auth/signup", "POST", { email, password }),
+  checkEmail: async (email) => apiRequest("/api/auth/check-email", "POST", { email }),
+  resetPassword: async (email, newPassword) => apiRequest("/api/auth/change-password", "POST", { email, newPassword }),
 
-  signup: async (email, password) => {
-    return apiRequest("/api/auth/signup", "POST", { email, password })
-  },
-  addStudent: async (studentData) => {
-    return apiRequest("/api/students/add-student", "POST", studentData)
-    // http://localhost:8080/api/students/add-student
-  },
+  // Student Management
+  addStudent: async (studentData) => apiRequest("/api/students/add-student", "POST", studentData),
+  resultsUpload: async (studentData) => apiRequest("/api/students/import", "POST", studentData),
+  fetchStudentDetails: async (studentId, semester) => apiRequest(`/api/students/${studentId}/semester/${semester}`, "GET"),
+  checkStudentExist: async (studentId) => apiRequest(`/api/students/checkStudentExist/${studentId}`, "GET"),
+  updateStudentResults: async (studentId, semester, marksData) => 
+    apiRequest(`/api/students/${studentId}/semester/${semester}`, "PUT", { results: marksData.results }),
+  updateMarksForSemester: async (data) => apiRequest("/api/students/update-marks", "POST", data),
+  getTopStudentForSemester: async (semester) => apiRequest(`/api/students/topStudentForSemester/${semester}`, "GET"),
+  calculateCGPA: async (studentId, semester) => apiRequest(`/api/students/calculate-cgpa/${studentId}`, "GET"),
+  calculateGPA: async (studentId) => apiRequest(`/api/students/calculate-gpa/${studentId}`, "GET"),
+  getTopRankers: async () => apiRequest("/api/students/top-rankers", "GET"),
+  getCompareResults: async (studentId1, studentId2, semester) => 
+    apiRequest(`/api/students/compareResults/${studentId1}/${studentId2}/semester/${semester}`, "GET"),
+  getSemesterWiseCount: async () => apiRequest("/api/students/admin/semester-wise-count", "GET"),
+  getSemesterWisePerformance: async () => apiRequest("/api/students/admin/semester-wise-performance", "GET"),
 
-  // Upload student data
-  resultsUpload: async (studentData) => {
-    return apiRequest("/api/students/import", "POST", studentData)
-  },
+  // Scholarship Management
+  addScholarship: async (scholarshipData) => apiRequest("/api/rewards/scholarships", "POST", scholarshipData),
+  getScholarships: async () => apiRequest("/api/rewards/scholarships", "GET"),
+  getEligibleScholarships: async (cgpa, familyIncome) => 
+    apiRequest(`/api/rewards/eligible-scholarships?cgpa=${cgpa}&familyIncome=${familyIncome}`, "GET"),
+};
 
-  // Fetch student details based on studentId and semester
-  fetchStudentDetails: async (studentId, semester) => {
-    return apiRequest(`/api/students/${studentId}/semester/${semester}`, "GET")
-  },
-
-  // Check if a student exists
-  checkStudentExist: async (studentId) => {
-    return apiRequest(`/api/students/checkStudentExist/${studentId}`, "GET")
-  },
-
-  // Update student results
-  updateStudentResults: async (studentId, semester, marksData) => {
-    return apiRequest(
-      `/api/students/${studentId}/semester/${semester}`,
-      "PUT",
-      { results: marksData.results }
-    )
-  },
-  // Update student results for a semester
-  updateMarksForSemester: async (data) => {
-    // console.log('Data in API:',data)
-    return apiRequest("/api/students/update-marks", "POST", data)
-  },
-
-  // Get top student for a specific semester
-  getSemesterResults: async (semester) => {
-    return apiRequest(`/api/students/topStudentForSemester/${semester}`, "GET")
-  },
-
-  // Calculate CGPA
-  calculateCGPA: async (studentId, semester) => {
-    return apiRequest(`/api/students/calculate-cgpa/${studentId}`, "GET")
-  },
-  calculateGPA: async (studentId) => {
-    return apiRequest(`/api/students/calculate-gpa/${studentId}`, "GET")
-  },
-
-  // Get top rankers
-  getTopRankers: async () => {
-    return apiRequest(`/api/students/top-rankers`, "GET")
-  }, // Add new scholarship
-  addScholarship: async (scholarshipData) => {
-    return apiRequest("/api/rewards/scholarships", "POST", scholarshipData)
-  },
-
-  // Fetch all scholarships
-  getScholarships: async () => {
-    return apiRequest("/api/rewards/scholarships", "GET")
-  },
-
-  // Get eligible scholarships based on CGPA and family income
-  getEligibleScholarships: async (cgpa, familyIncome) => {
-    return apiRequest(
-      `/api/rewards/eligible-scholarships?cgpa=${cgpa}&familyIncome=${familyIncome}`,
-      "GET"
-    )
-  },
-  getCompareResults: async (studentId1, studentId2, semester) => {
-    return apiRequest(
-      `/api/students/compareResults/${studentId1}/${studentId2}/semester/${semester}`,
-      "GET"
-    )
-  },
-  getSemesterWiseCount: async () => {
-    return apiRequest("/api/students/admin/semester-wise-count", "GET")
-  },
-  getSemesterWisePerformance: async () => {
-    return apiRequest("/api/students/admin/semester-wise-performance", "GET")
-  },
-  checkEmail: async (email) => {
-    return apiRequest(`/api/auth/check-email`, "POST", { email }) // Send email in body
-  },
-  resetPassword: async (email, newPassword) => {
-    return apiRequest(`/api/auth/change-password`, "POST", {
-      email,
-      newPassword,
-    }) // Send email and password in body
-  },
-}
-
-export default SummaryApi
+export default SummaryApi;
