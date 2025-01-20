@@ -8,6 +8,8 @@ import CompareStudent from "../components/CompareStudent.jsx"
 
 const Student = () => {
   const [studentId, setStudentId] = useState("")
+  const [password, setPassword] = useState("")
+  const [authenticated, setAuthenticated] = useState(false)
   const [semester, setSemester] = useState("")
   const [semesterData, setSemesterData] = useState(null)
   const [gpa, setGPA] = useState(null)
@@ -21,6 +23,36 @@ const Student = () => {
   const [compsemester, setCompSemester] = useState("")
   const [selectedSection, setSelectedSection] = useState("marksheet") // New state to track the selected section
   const [comparisonData, setComparisonData] = useState([])
+  const [dataFetchedSuccessfully, setDataFetchedSuccessfully] = useState(false)
+
+  // Handle login/authentication
+  const handleLogin = async () => {
+    if (!studentId.trim() || !password.trim()) {
+      toast.error("Please fill in both Student ID and Password.")
+      return
+    }
+
+    setLoading(true)
+    toast.loading("Authenticating...")
+
+    try {
+      const response = await SummaryApi.authenticateStudent(studentId, password) // API for authentication
+      console.log(response)
+      if (response && response.success) {
+        setAuthenticated(true) // Set authenticated to true on success
+        toast.dismiss()
+        toast.success("Authentication successful!")
+      } else {
+        toast.dismiss()
+        toast.error("Invalid Student ID or Password.")
+      }
+    } catch (error) {
+      toast.dismiss()
+      toast.error("Error during authentication. Please try again later.")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const fetchStudentData = async () => {
     if (!studentId.trim() || !semester.trim()) {
@@ -30,6 +62,7 @@ const Student = () => {
 
     setLoading(true)
     setFetchAttempted(false)
+    setDataFetchedSuccessfully(false) // Reset success state
     toast.loading("Fetching data...")
 
     try {
@@ -39,6 +72,7 @@ const Student = () => {
         setSemesterData(response)
         setGPA(gparesponse)
         setFetchAttempted(true)
+        setDataFetchedSuccessfully(true) // Set success state
         toast.dismiss()
         toast.success("Data fetched successfully!")
       } else {
@@ -52,6 +86,7 @@ const Student = () => {
       setSemesterData(null)
       setGPA(null)
       setFetchAttempted(true)
+       setDataFetchedSuccessfully(false)
       toast.dismiss()
       if (error.response && error.response.status === 404) {
         toast.error("No data found for this student and semester.")
@@ -60,8 +95,8 @@ const Student = () => {
       }
     } finally {
       setLoading(false)
-      setStudentId("")
-      setSemester("")
+      // setStudentId("")
+      // setSemester("")
     }
   }
 
@@ -144,83 +179,122 @@ const Student = () => {
             Student Panel
           </h2>
 
-          <div className="mb-6 ">
-            {/* Student ID */}
-            <label
-              htmlFor="studentId"
-              className="block font-semibold text-gray-700 mb-2"
-            >
-              Student ID:
-            </label>
-            <input
-              type="text"
-              id="studentId"
-              value={studentId || ""}
-              onChange={(e) => setStudentId(e.target.value)}
-              placeholder="Enter Student ID (e.g. 1001)"
-              className="p-3 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-3/4 mx-auto"
-            />
-          </div>
-
-          <div className="mb-6">
-            {/* Semester */}
-            <label
-              htmlFor="semester"
-              className="block font-semibold text-gray-700 mb-2"
-            >
-              Semester:
-            </label>
-            <input
-              type="text"
-              value={semester || ""}
-              id="semester"
-              onChange={(e) => setSemester(e.target.value)}
-              placeholder="Enter Semester (e.g. 1, 2, 3, 4, 5, 6, 7, 8)"
-              className="p-3 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-3/4 mx-auto"
-            />
-          </div>
-
-          {/* Fetch Data Button */}
-          <button
-            onClick={fetchStudentData}
-            disabled={loading}
-            className={`p-3 w-full rounded-md text-white transition duration-300 ${loading ? "bg-gray-500 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"}`}
-          >
-            {loading ? "Fetching Data..." : "Get Marksheet"}
-          </button>
-
-          {/* Error Message */}
-          {fetchAttempted && semesterData === null && (
-            <p className="text-red-600 mt-4 text-sm text-center">
-              No valid data found for the provided Student ID and Semester.
-            </p>
-          )}
-
-          {/* Display Semester Data & Buttons */}
-          {semesterData && semesterData.semester && (
-            <div className="mt-6">
-              <h3 className="text-2xl font-semibold text-blue-700 mb-4">
-                Student Semester Marksheet
-              </h3>
-
-              <div className="flex flex-col md:flex-row gap-4 justify-center">
-                {/* Preview PDF Button */}
-                <button
-                  onClick={() => handleGeneratePDF(true)} // Preview PDF
-                  className="bg-yellow-500 text-white p-3 rounded-md hover:bg-yellow-600 w-full md:w-auto"
+          {!authenticated ? (
+            <>
+              {/* Login Form */}
+              <div className="mb-6">
+                <label
+                  htmlFor="studentId"
+                  className="block font-semibold text-gray-700 mb-2"
                 >
-                  Preview PDF
-                </button>
-
-                {/* Download PDF Button */}
-                <button
-                  onClick={() => handleGeneratePDF()} // Download PDF
-                  className="bg-green-500 text-white p-3 rounded-md hover:bg-green-600 w-full md:w-auto"
-                >
-                  Download PDF
-                </button>
+                  Student ID:
+                </label>
+                <input
+                  type="text"
+                  id="studentId"
+                  value={studentId}
+                  onChange={(e) => setStudentId(e.target.value)}
+                  placeholder="Enter Student ID"
+                  className="p-3 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+                />
               </div>
-            </div>
+
+              <div className="mb-6">
+                <label
+                  htmlFor="password"
+                  className="block font-semibold text-gray-700 mb-2"
+                >
+                  Password:
+                </label>
+                <input
+                  type="password"
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter Password"
+                  className="p-3 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+                />
+              </div>
+
+              <button
+                onClick={handleLogin}
+                disabled={loading}
+                className={`p-3 w-full rounded-md text-white transition duration-300 ${
+                  loading
+                    ? "bg-gray-500 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-700"
+                }`}
+              >
+                {loading ? "Authenticating..." : "Login"}
+              </button>
+            </>
+          ) : (
+            <>
+              {/* Semester Selection */}
+              {!dataFetchedSuccessfully && (
+                <div className="mb-6">
+                  {/* Semester */}
+                  <label
+                    htmlFor="semester"
+                    className="block font-semibold text-gray-700 mb-2"
+                  >
+                    Semester:
+                  </label>
+                  <input
+                    type="text"
+                    value={semester || ""}
+                    id="semester"
+                    onChange={(e) => setSemester(e.target.value)}
+                    placeholder="Enter Semester (e.g. 1, 2, 3, 4, 5, 6, 7, 8)"
+                    className="p-3 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-3/4 mx-auto"
+                  />
+                </div>
+              )}
+              {/* Fetch Data Button */}
+              {!dataFetchedSuccessfully && (
+                <button
+                  onClick={fetchStudentData}
+                  disabled={loading}
+                  className={`p-3 w-full rounded-md text-white transition duration-300 ${loading ? "bg-gray-500 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"}`}
+                >
+                  {loading ? "Fetching Data..." : "Get Marksheet"}
+                </button>
+              )}
+
+              {/* Error Message */}
+              {fetchAttempted && semesterData === null && (
+                <p className="text-red-600 mt-4 text-sm text-center">
+                  No valid data found for the provided Student ID and Semester.
+                </p>
+              )}
+
+              {/* Display Semester Data & Buttons */}
+              {dataFetchedSuccessfully && semesterData && semesterData.semester && (
+                <div className="mt-6">
+                  <h3 className="text-2xl font-semibold text-blue-700 mb-4">
+                    Student Semester Marksheet
+                  </h3>
+
+                  <div className="flex flex-col md:flex-row gap-4 justify-center">
+                    {/* Preview PDF Button */}
+                    <button
+                      onClick={() => handleGeneratePDF(true)} // Preview PDF
+                      className="bg-yellow-500 text-white p-3 rounded-md hover:bg-yellow-600 w-full md:w-auto"
+                    >
+                      Preview PDF
+                    </button>
+
+                    {/* Download PDF Button */}
+                    <button
+                      onClick={() => handleGeneratePDF()} // Download PDF
+                      className="bg-green-500 text-white p-3 rounded-md hover:bg-green-600 w-full md:w-auto"
+                    >
+                      Download PDF
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}

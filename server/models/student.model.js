@@ -1,5 +1,5 @@
 import mongoose from "mongoose"
-
+import StudentPasswordModel from "./student.password.model.js";
 const studentSchema = new mongoose.Schema(
   {
     studentId: { type: String, required: true, unique: true },

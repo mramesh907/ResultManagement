@@ -8,14 +8,15 @@ const Navbar = ({ onSelectSection, selectedSection }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <div className="text-xl font-bold cursor-pointer">Dashboard</div>
+          <div className="text-xl font-bold cursor-pointer mr-4">Dashboard</div>
 
           {/* Desktop Menu */}
           <div className="hidden md:flex space-x-4">
             {[
-              "upload",
               "marks",
+              "upload",
               "topStudent",
+              "studentlist",
               "scholarships",
               "charts",
               "signup",
@@ -29,9 +30,10 @@ const Navbar = ({ onSelectSection, selectedSection }) => {
                     : "hover:bg-white hover:text-black"
                 }`}
               >
-                {section === "upload" && "Upload Results"}
                 {section === "marks" && "Manual Marks Entry"}
+                {section === "upload" && "Upload Results"}
                 {section === "topStudent" && "Top Student & Rankers"}
+                {section === "studentlist" && "Student List"}
                 {section === "scholarships" && "Manage Scholarships"}
                 {section === "charts" && "Student Leaderboard"}
                 {section === "signup" && "Signup"}
@@ -70,9 +72,10 @@ const Navbar = ({ onSelectSection, selectedSection }) => {
       {isOpen && (
         <div className="md:hidden bg-purple-600 px-4 py-6 space-y-4">
           {[
-            "upload",
             "marks",
+            "upload",
             "topStudent",
+            "studentlist",
             "scholarships",
             "charts",
             "signup",
@@ -89,9 +92,10 @@ const Navbar = ({ onSelectSection, selectedSection }) => {
                   : "hover:bg-white hover:text-black"
               }`}
             >
-              {section === "upload" && "Upload Results"}
               {section === "marks" && "Manual Marks Entry"}
+              {section === "upload" && "Upload Results"}
               {section === "topStudent" && "Top Student & Rankers"}
+              {section === "studentlist" && "Student List"}
               {section === "scholarships" && "Manage Scholarships"}
               {section === "charts" && "Student Leaderboard"}
               {section === "signup" && "Signup"}

@@ -48,7 +48,11 @@ const SummaryApi = {
     apiRequest("/api/auth/check-email", "POST", { email }),
   resetPassword: async (email, newPassword) =>
     apiRequest("/api/auth/change-password", "POST", { email, newPassword }),
-
+  authenticateStudent: async (studentId, password) =>
+    apiRequest("/api/students/authenticate-student", "POST", {
+      studentId,
+      password,
+    }),
   // Student Management
   addStudent: async (studentData) =>
     apiRequest("/api/students/add-student", "POST", studentData),
@@ -58,7 +62,8 @@ const SummaryApi = {
     apiRequest(`/api/students/${studentId}/semester/${semester}`, "GET"),
   fetchStudentBySemester: async (semester) =>
     apiRequest(`/api/students/allstudents/${semester}`, "GET"),
-  submitMarks: async (data) => apiRequest("/api/students/submitMarks", "POST", data),
+  submitMarks: async (data) =>
+    apiRequest("/api/students/submitMarks", "POST", data),
   checkStudentExist: async (studentId) =>
     apiRequest(`/api/students/checkStudentExist/${studentId}`, "GET"),
   updateStudentResults: async (studentId, semester, marksData) =>

@@ -8,6 +8,7 @@ import Navbar from "./Navbar"
 import { FaFileUpload, FaDownload } from "react-icons/fa"
 import AdminCharts from "../components/AdminCharts"
 import Signup from "../components/Signup"
+import SemesterStudentList from "../components/SemesterStudentList"
 const Admin = () => {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -555,6 +556,12 @@ const Admin = () => {
             <div className="mt-8">
               {/* <h3 className="text-xl font-semibold mb-4">Signup</h3> */}
               <Signup /> {/* Render the signup form here */}
+            </div>
+          )}
+          {selectedSection === "studentlist" && (
+            <div className="mt-8">
+              {/* <h3 className="text-xl font-semibold mb-4">Login</h3> */}
+              <SemesterStudentList /> {/* Render the login form here */}
             </div>
           )}
         </div>

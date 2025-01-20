@@ -16,9 +16,16 @@ import {
   semesterPerformance,
   getStudentsBySemester,
   submitMarks,
+  authenticateStudent,
+  createStudentPassword,
+  resetStudentPassword,
 } from "../controllers/student.contoller.js" // Import the controller
 
 const router = express.Router()
+
+router.post("/create-password", createStudentPassword)
+router.post("/authenticate-student", authenticateStudent)
+router.post('/reset-password',resetStudentPassword)
 
 // Public routes (unprotected)
 router.get("/checkStudentExist/:studentId", checkStudentExist) // Check if a student exists

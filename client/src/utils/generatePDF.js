@@ -2,7 +2,6 @@ import jsPDF from "jspdf"
 import "jspdf-autotable"
 // Function to generate the student data PDF
 const generatePDF = (semesterData, gpa, preview = false) => {
-  // console.log(gpa)
 
   if (!semesterData) {
     console.error("No data available to generate PDF.")
@@ -262,6 +261,7 @@ const generatePDF = (semesterData, gpa, preview = false) => {
     bodyStyles: {
       fontStyle: "normal", // Normal font for body text
       textColor: [0, 0, 0],
+      halign: "center",
     },
     // willDrawCell: (data) => {
     //   const { section, column, cell } = data
@@ -401,6 +401,7 @@ const generatePDF = (semesterData, gpa, preview = false) => {
     bodyStyles: {
       fontStyle: "normal",
       textColor: [0, 0, 0],
+      halign: "center",
     },
   })
 
@@ -440,5 +441,3 @@ const generatePDF = (semesterData, gpa, preview = false) => {
 }
 
 export default generatePDF
-
-// All data comes dynamically correct. just align the texts. in 'Summary Below the Table' ,'Footer' and 'Adding Verified by details' section texts. in proper positions even when new page added

@@ -1,4 +1,7 @@
 import Student from "../models/student.model.js"
+import StudentPasswordModel from "../models/student.password.model.js"
+import { generateDefaultPassword } from "../utils/generateDefaultPassword.js"
+import bcrypt from "bcrypt"
 import xlsx from "xlsx"
 import fs from "fs"
 import path from "path"
@@ -9,25 +12,128 @@ import { fileURLToPath } from "url"
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
+
+// Create Password for a new student
+export const createStudentPassword = async (studentId) => {
+  try {
+    const student = await Student.findOne({ studentId })
+    if (!student) {
+      throw new Error("Student not found.")
+    }
+
+    // Generate the default password using studentId and no
+    const defaultPassword = `${student.studentId}-${student.no}`
+    console.log("defaultPassword", defaultPassword)
+
+    // Hash the default password
+    const salt = await bcrypt.genSalt(10)
+    const hashedPassword = await bcrypt.hash(defaultPassword, salt)
+
+    // Create and save the password for the student
+    const newPassword = new StudentPasswordModel({
+      studentId: student._id,
+      password: hashedPassword,
+    })
+
+    const savedPassword = await newPassword.save()
+    console.log("Password created and hashed successfully.")
+
+    // Return the saved password or success message
+    return {
+      message: "Password created and hashed successfully.",
+      studentId: studentId,
+    }
+  } catch (error) {
+    console.error("Error creating student password:", error)
+    throw new Error("Error creating student password.")
+  }
+}
+
+
+// Reset Password for an existing student
+export const resetStudentPassword = async (req, res) => {
+  try {
+    const { studentId, newPassword } = req.body;
+
+    // Check if the student exists
+    const student = await Student.findOne({ studentId });
+    if (!student) {
+      return res.status(404).send("Student not found.");
+    }
+
+    // Hash the new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // Update the password in the StudentPasswordModel
+    const updatedPassword = await StudentPasswordModel.findOneAndUpdate(
+      { studentId: student._id },
+      { password: hashedPassword },
+      { new: true }
+    );
+
+    if (!updatedPassword) {
+      return res.status(400).send("Error updating password.");
+    }
+
+    return res.status(200).send("Password reset successfully.");
+  } catch (error) {
+    return res.status(500).send("Error resetting password.");
+  }
+};
+
+// Authenticate Student (check studentId and password)
+export const authenticateStudent = async (req, res) => {
+  try {
+    const { studentId, password } = req.body
+
+    // Find student by studentId
+    const student = await Student.findOne({ studentId })
+    if (!student) {
+      return res.status(404).send("Student not found.")
+    }
+
+    // Find student password (hashed password)
+    const studentPassword = await StudentPasswordModel.findOne({
+      studentId: student._id,
+    })
+
+    if (!studentPassword) {
+      return res.status(404).send("Password not found.")
+    }
+
+    // Compare provided password with stored hashed password
+    const isMatch = await bcrypt.compare(password, studentPassword.password)
+
+    if (!isMatch) {
+      return res.status(400).send("Invalid password.")
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Authentication successful.",
+    })
+
+  } catch (error) {
+    return res.status(500).send("Error authenticating student.")
+  }
+}
+
+
 // Add a new student
 export const addNewStudent = async (req, res) => {
   try {
-    const { studentId, name, roll,no, registrationNo, session, year, semesters } =
-      req.body
-    console.log(req.body)
+    const { studentId, name, roll, no, registrationNo, session, year, semesters } = req.body;
+
     // Validate required fields
     if (!studentId || !name || !roll || !no || !registrationNo || !session || !year) {
-      return res
-        .status(400)
-        .json({ error: "All required fields must be filled." })
+      return res.status(400).json({ error: "All required fields must be filled." });
     }
 
     // Check if the student already exists
-    const existingStudent = await Student.findOne({ studentId })
+    const existingStudent = await Student.findOne({ studentId });
     if (existingStudent) {
-      return res
-        .status(400)
-        .json({ error: "Student with this ID already exists." })
+      return res.status(400).json({ error: "Student with this ID already exists." });
     }
 
     // Create a new student document
@@ -39,23 +145,25 @@ export const addNewStudent = async (req, res) => {
       registrationNo,
       session,
       year,
-      semesters: semesters || [], // Optionally add semesters
-    })
+      semesters: semesters || [],
+    });
 
     // Save the student to the database
-    await newStudent.save()
+    const savedStudent = await newStudent.save();
+
+    // After student is created, create student password
+    const getPassword=await createStudentPassword(savedStudent.studentId);
 
     res.status(201).json({
-      message: "New student added successfully.",
+      message: "Student created successfully and password set.",
       student: newStudent,
-    })
+    });
   } catch (error) {
-    console.error("Error adding new student:", error)
-    res
-      .status(500)
-      .json({ error: "An error occurred while adding the student." })
+    console.error("Error adding new student:", error);
+    res.status(500).json({ error: "An error occurred while adding the student." });
   }
-}
+};
+
 
 // Function to import students from an Excel file
 export const importStudentsFromExcel = async (req, res) => {
