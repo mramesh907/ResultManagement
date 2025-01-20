@@ -202,7 +202,7 @@ const Admin = () => {
     }
 
     try {
-      const response = await SummaryApi.getSemesterResults(semester)
+      const response = await SummaryApi.getTopStudentForSemester(semester)
 
       if (response) {
         const { name, totalMarks, studentId, semester: semesterData } = response
