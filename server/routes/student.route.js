@@ -14,6 +14,8 @@ import {
   getComparisonStudent,
   studentCount,
   semesterPerformance,
+  getStudentsBySemester,
+  submitMarks,
 } from "../controllers/student.contoller.js" // Import the controller
 
 const router = express.Router()
@@ -21,6 +23,8 @@ const router = express.Router()
 // Public routes (unprotected)
 router.get("/checkStudentExist/:studentId", checkStudentExist) // Check if a student exists
 router.get("/:studentId/semester/:semester", getStudentByIdAndSemester) // Fetch student details by student ID and semester
+router.get("/allstudents/:semester", getStudentsBySemester)
+router.post('/submitMarks', submitMarks)
 router.get("/topStudentForSemester/:semester", getTopStudentForSemester) // Get top student for a specific semester
 router.get("/top-rankers", getTopRankers) // Fetch top rankers
 router.get("/calculate-cgpa/:studentId", calculateCGPA) // Calculate CGPA for a student in a specific semester

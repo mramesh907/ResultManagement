@@ -23,7 +23,7 @@ const apiRequest = async (url, method, data = null, isSignIn = false) => {
       withCredentials: true, // Include credentials (cookies) for cross-origin requests
     })
 
-    // console.log("API Response:", response.data)
+    console.log("API Response:", response.data)
     return response.data // Return the response data
   } catch (error) {
     // console.log("API Error:", error.response.data.message)
@@ -56,6 +56,9 @@ const SummaryApi = {
     apiRequest("/api/students/import", "POST", studentData),
   fetchStudentDetails: async (studentId, semester) =>
     apiRequest(`/api/students/${studentId}/semester/${semester}`, "GET"),
+  fetchStudentBySemester: async (semester) =>
+    apiRequest(`/api/students/allstudents/${semester}`, "GET"),
+  submitMarks: async (data) => apiRequest("/api/students/submitMarks", "POST", data),
   checkStudentExist: async (studentId) =>
     apiRequest(`/api/students/checkStudentExist/${studentId}`, "GET"),
   updateStudentResults: async (studentId, semester, marksData) =>

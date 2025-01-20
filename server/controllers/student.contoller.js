@@ -410,6 +410,211 @@ export const updateMarksForSemester = async (req, res) => {
   }
 }
 
+
+
+
+
+export const getStudentsBySemester = async (req, res) => {
+  try {
+    const { semester } = req.params
+
+    // Validate the semester parameter
+    if (
+      !semester ||
+      !["1", "2", "3", "4", "5", "6", "7", "8"].includes(semester)
+    ) {
+      return res.status(400).json({ error: "Invalid semester value." })
+    }
+
+    // Query to find students with data for the specified semester
+    const students = await Student.find({
+      "semesters.semester": semester,
+    }).select("studentId name") // Only select studentId and name
+
+    // If no students found, return a 404 response
+    if (students.length === 0) {
+      return res
+        .status(404)
+        .json({ error: `No students found for semester ${semester}.` })
+    }
+
+    // Respond with the list of students (only studentId and name)
+    return res.status(200).json(students)
+  } catch (error) {
+    console.error("Error fetching students by semester:", error)
+    res.status(500).json({ error: "Internal Server Error." })
+  }
+}
+
+
+
+
+// Function to handle the submission of marks
+export const submitMarks = async (req, res) => {
+  try {
+    const { semester, papers, students } = req.body
+
+    // Validate that semester, papers, and students are provided
+    if (!semester || !Array.isArray(papers) || papers.length === 0) {
+      return res
+        .status(400)
+        .json({ error: "Semester and papers are required." })
+    }
+
+    if (!Array.isArray(students) || students.length === 0) {
+      return res
+        .status(400)
+        .json({ error: "At least one student is required." })
+    }
+
+    const notFoundStudents = []
+
+    // Process each student
+    for (const studentData of students) {
+      const { studentId, marks } = studentData
+
+      // Validate student data
+      if (!studentId || !marks || marks.length === 0) {
+        return res.status(400).json({ error: "Student data is incomplete." })
+      }
+
+      // Ensure marks for each paper are valid
+      for (const mark of marks) {
+        const { paperName, ciaMarks, eseMarks } = mark
+        if (!paperName || ciaMarks === undefined || eseMarks === undefined) {
+          return res.status(400).json({ error: "Mark details are incomplete." })
+        }
+
+        // Find the paper in the papers array to get maxCIA and maxESE marks
+        const paperDetails = papers.find((paper) => paper.paper === paperName)
+        if (!paperDetails) {
+          return res
+            .status(400)
+            .json({
+              error: `Paper ${paperName} not found in the provided paper list.`,
+            })
+        }
+
+        const { ciaMarks: maxCiaMarks, eseMarks: maxEseMarks } = paperDetails
+
+        // Validate obtained marks are within the dynamic allowed range based on paper details
+        if (
+          parseInt(ciaMarks) > maxCiaMarks ||
+          parseInt(eseMarks) > maxEseMarks ||
+          parseInt(ciaMarks) < 0 ||
+          parseInt(eseMarks) < 0
+        ) {
+          return res.status(400).json({
+            error: `Invalid marks for paper: ${paperName}. CIA Marks should be between 0 and ${maxCiaMarks}, and ESE Marks should be between 0 and ${maxEseMarks}.`,
+          })
+        }
+      }
+
+      // Find the student record
+      const studentRecord = await Student.findOne({ studentId })
+
+      if (!studentRecord) {
+        notFoundStudents.push(studentId)
+        continue // Skip if student is not found
+      }
+
+      // Find or create the semester record
+      let semesterRecord = studentRecord.semesters.find(
+        (s) => s.semester === semester
+      )
+      if (!semesterRecord) {
+        return res.status(400).json({
+          error: `Semester ${semester} not found for student ${studentId}.`,
+        })
+      }
+
+      // Process each paper for the student
+      for (const paper of papers) {
+        const {
+          subject,
+          course,
+          paper: paperName,
+          type,
+          ciaMarks: maxCiaMarks,
+          eseMarks: maxEseMarks,
+        } = paper
+
+        // Find marks for the corresponding paper
+        const paperMarks = marks.find((m) => m.paperName === paperName)
+        if (!paperMarks) continue // Skip if no marks for the current paper
+
+        const { ciaMarks: obtainedCiaMarks, eseMarks: obtainedEseMarks } =
+          paperMarks
+
+        // Find the subject record for the semester
+        let subjectRecord = semesterRecord.results.find(
+          (result) =>
+            result.subject === subject &&
+            result.course === course &&
+            result.paper === paperName
+        )
+
+        // If subject doesn't exist, create a new record
+        if (!subjectRecord) {
+          subjectRecord = {
+            subject,
+            course,
+            paper: paperName,
+            types: [
+              {
+                type,
+                credit: paper.credit,
+                ciaMarks: maxCiaMarks,
+                eseMarks: maxEseMarks,
+                ciamarksObtained: obtainedCiaMarks,
+                esemarksObtained: obtainedEseMarks,
+              },
+            ],
+          }
+          semesterRecord.results.push(subjectRecord)
+        } else {
+          // If subject exists, find or create the type record
+          const typeRecord = subjectRecord.types.find((t) => t.type === type)
+          if (typeRecord) {
+            typeRecord.ciamarksObtained = obtainedCiaMarks
+            typeRecord.esemarksObtained = obtainedEseMarks
+          } else {
+            // If the type doesn't exist, create a new type record
+            subjectRecord.types.push({
+              type,
+              credit: paper.credit,
+              ciaMarks: maxCiaMarks,
+              eseMarks: maxEseMarks,
+              ciamarksObtained: obtainedCiaMarks,
+              esemarksObtained: obtainedEseMarks,
+            })
+          }
+        }
+      }
+
+      // Save the updated student record
+      await studentRecord.save()
+    }
+
+    // If some students were not found, send an error response
+    if (notFoundStudents.length > 0) {
+      return res.status(404).json({
+        error: `The following students were not found: ${notFoundStudents.join(", ")}`,
+      })
+    }
+
+    // Respond with success message
+    res
+      .status(200)
+      .json({ message: "Marks submitted successfully for all students." })
+  } catch (error) {
+    console.error("Error in submitting marks:", error)
+    res.status(500).json({ error: "An error occurred while submitting marks." })
+  }
+}
+
+
+
 // Get student details by student ID and semester number
 export const getStudentByIdAndSemester = async (req, res) => {
   const { studentId, semester } = req.params // Extract studentId and semester from the request parameters
