@@ -237,7 +237,7 @@ const generatePDF = (semesterData, gpa, preview = false) => {
     "",
     "",
     totalCredits,
-    totalCreditPoints.toFixed(2),
+    totalCreditPoints,
   ])
 
   // Add Table to PDF
@@ -292,7 +292,7 @@ const generatePDF = (semesterData, gpa, preview = false) => {
   doc.text(`Grand Total Credit Points: ${totalCredits}`, marginLeft, currentY)
   doc.text(`SGPA: ${sgpa}`, marginLeft, currentY + rowHeight)
   doc.text(
-    `Credit Points: ${totalCreditPoints.toFixed(2)}`,
+    `Credit Points: ${totalCreditPoints}`,
     rightColumnX,
     currentY
   )
@@ -326,7 +326,7 @@ const generatePDF = (semesterData, gpa, preview = false) => {
         result.maxMarks || "N/A",
         result.totalMarks || "N/A",
         result.percentageObtained
-          ? result.percentageObtained.toFixed(2)
+          ? result.percentageObtained
           : "N/A",
       ]
     })

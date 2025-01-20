@@ -1061,18 +1061,35 @@ export const calculateGPA = async (req, res) => {
           )
         )
       }, 0),
-      percentageObtained:
-        semesterData.results.reduce((sum, row) => {
+      percentageObtained: (() => {
+        const totalMaxMarks = semesterData.results.reduce((sum, row) => {
           return (
             sum +
             row.types.reduce((subSum, type) => {
-              const maxMarks = (type.ciaMarks || 0) + (type.eseMarks || 0)
-              const marksObtained =
-                (type.ciamarksObtained || 0) + (type.esemarksObtained || 0)
-              return subSum + (marksObtained / maxMarks) * 100
+              return subSum + (type.ciaMarks || 0) + (type.eseMarks || 0)
             }, 0)
           )
-        }, 0) / semesterData.results.length || 0,
+        }, 0)
+
+        const totalMarksObtained = semesterData.results.reduce((sum, row) => {
+          return (
+            sum +
+            row.types.reduce((subSum, type) => {
+              return (
+                subSum +
+                (type.ciamarksObtained || 0) +
+                (type.esemarksObtained || 0)
+              )
+            }, 0)
+          )
+        }, 0)
+
+        // Calculate percentage and ensure it's a number before using toFixed
+        const percentage =
+          totalMaxMarks > 0 ? (totalMarksObtained / totalMaxMarks) * 100 : 0
+
+        return Number(percentage).toFixed(2) // Ensure `percentage` is a number
+      })(),
     }
   })
 

@@ -112,7 +112,6 @@ const Student = () => {
         studentId2,
         compsemester
       )
-      console.log("Comparison Response:", comparisonResponse)
 
       if (comparisonResponse && comparisonResponse.length > 0) {
         setComparisonData(comparisonResponse)
