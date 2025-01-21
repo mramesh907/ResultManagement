@@ -113,6 +113,7 @@ const ManualMarksEntry = () => {
       setStudents([])
       setStep(1)
     } catch (err) {
+      console.log(err)
       toast.error("Failed to update marks. Please try again.")
     }
   }

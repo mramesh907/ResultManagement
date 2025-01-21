@@ -256,6 +256,7 @@ export const importStudentsFromExcel = async (req, res) => {
               )
                 .split(",")
                 .map(Number) // Extract marks
+
               // Validation: Check if obtained marks are valid
               if (
                 ciamarksObtained > Number(ciaMarks) ||
@@ -271,6 +272,7 @@ export const importStudentsFromExcel = async (req, res) => {
                   eseMarks,
                 })
               }
+
               results.push({
                 subject: subject.trim(),
                 course: course.trim(),
@@ -302,7 +304,7 @@ export const importStudentsFromExcel = async (req, res) => {
                 )
                 if (existingSubject) {
                   existingSubject.types = result.types
-                } else {
+                    } else {
                   existingSemester.results.push(result)
                 }
               })
@@ -313,7 +315,7 @@ export const importStudentsFromExcel = async (req, res) => {
               await existingStudent.save()
             }
 
-            updatedStudents++
+              updatedStudents++
           } else {
             const newStudent = new Student({
               studentId,
@@ -596,11 +598,9 @@ export const submitMarks = async (req, res) => {
         // Find the paper in the papers array to get maxCIA and maxESE marks
         const paperDetails = papers.find((paper) => paper.paper === paperName)
         if (!paperDetails) {
-          return res
-            .status(400)
-            .json({
-              error: `Paper ${paperName} not found in the provided paper list.`,
-            })
+          return res.status(400).json({
+            error: `Paper ${paperName} not found in the provided paper list.`,
+          })
         }
 
         const { ciaMarks: maxCiaMarks, eseMarks: maxEseMarks } = paperDetails
@@ -700,14 +700,20 @@ export const submitMarks = async (req, res) => {
         }
       }
 
-      // Save the updated student record
-      await studentRecord.save()
+      // Save the updated student record without validation for fields like `no`
+      await Student.updateOne(
+        { studentId },
+        { $set: { semesters: studentRecord.semesters } },
+        { runValidators: false } // Skips validation for unnecessary fields like `no`
+      )
     }
 
     // If some students were not found, send an error response
     if (notFoundStudents.length > 0) {
       return res.status(404).json({
-        error: `The following students were not found: ${notFoundStudents.join(", ")}`,
+        error: `The following students were not found: ${notFoundStudents.join(
+          ", "
+        )}`,
       })
     }
 
@@ -720,6 +726,9 @@ export const submitMarks = async (req, res) => {
     res.status(500).json({ error: "An error occurred while submitting marks." })
   }
 }
+
+
+
 
 
 
