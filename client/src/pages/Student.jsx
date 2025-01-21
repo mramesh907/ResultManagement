@@ -5,10 +5,11 @@ import generatePDF from "../utils/generatePDF.js" // Import the generatePDF func
 import StudentNavbar from "./StudentNavbar" // Import the StudentNavbar
 import ScholarshipList from "../components/ScholarshipList.jsx"
 import CompareStudent from "../components/CompareStudent.jsx"
-
+import { FaEye, FaEyeSlash } from "react-icons/fa"
 const Student = () => {
   const [studentId, setStudentId] = useState("")
   const [password, setPassword] = useState("")
+  const [showNewPassword, setShowNewPassword] = useState(false)
   const [authenticated, setAuthenticated] = useState(false)
   const [semester, setSemester] = useState("")
   const [semesterData, setSemesterData] = useState(null)
@@ -63,7 +64,7 @@ const Student = () => {
     setLoading(true)
     setFetchAttempted(false)
     setDataFetchedSuccessfully(false) // Reset success state
-    toast.loading("Fetching data...")
+    toast.loading("Generating PDF...")
 
     try {
       const response = await SummaryApi.fetchStudentDetails(studentId, semester)
@@ -74,7 +75,7 @@ const Student = () => {
         setFetchAttempted(true)
         setDataFetchedSuccessfully(true) // Set success state
         toast.dismiss()
-        toast.success("Data fetched successfully!")
+        toast.success("PDF generated successfully!")
       } else {
         setSemesterData(null)
         setGPA(null)
@@ -95,8 +96,8 @@ const Student = () => {
       }
     } finally {
       setLoading(false)
-      // setStudentId("")
-      // setSemester("")
+      setStudentId("")
+      setSemester("")
     }
   }
 
@@ -199,7 +200,7 @@ const Student = () => {
                 />
               </div>
 
-              <div className="mb-6">
+              <div className="mb-6 relative">
                 <label
                   htmlFor="password"
                   className="block font-semibold text-gray-700 mb-2"
@@ -207,13 +208,24 @@ const Student = () => {
                   Password:
                 </label>
                 <input
-                  type="password"
+                  type={showNewPassword ? "text" : "password"}
                   id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter Password"
                   className="p-3 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute right-3 top-12 text-gray-500"
+                >
+                  {showNewPassword ? (
+                    <FaEyeSlash size={20} />
+                  ) : (
+                    <FaEye size={20} />
+                  )}
+                </button>
               </div>
 
               <button
@@ -227,6 +239,15 @@ const Student = () => {
               >
                 {loading ? "Authenticating..." : "Login"}
               </button>
+              <p className="mt-6 text-center text-sm text-gray-600">
+                Forgot your password?{" "}
+                <a
+                  href="/forgot-student-password"
+                  className="text-blue-500 hover:underline"
+                >
+                  Reset it here
+                </a>
+              </p>
             </>
           ) : (
             <>
@@ -269,31 +290,33 @@ const Student = () => {
               )}
 
               {/* Display Semester Data & Buttons */}
-              {dataFetchedSuccessfully && semesterData && semesterData.semester && (
-                <div className="mt-6">
-                  <h3 className="text-2xl font-semibold text-blue-700 mb-4">
-                    Student Semester Marksheet
-                  </h3>
+              {dataFetchedSuccessfully &&
+                semesterData &&
+                semesterData.semester && (
+                  <div className="mt-6">
+                    <h3 className="text-2xl font-semibold text-blue-700 mb-4">
+                      Student Semester Marksheet
+                    </h3>
 
-                  <div className="flex flex-col md:flex-row gap-4 justify-center">
-                    {/* Preview PDF Button */}
-                    <button
-                      onClick={() => handleGeneratePDF(true)} // Preview PDF
-                      className="bg-yellow-500 text-white p-3 rounded-md hover:bg-yellow-600 w-full md:w-auto"
-                    >
-                      Preview PDF
-                    </button>
+                    <div className="flex flex-col md:flex-row gap-4 justify-center">
+                      {/* Preview PDF Button */}
+                      <button
+                        onClick={() => handleGeneratePDF(true)} // Preview PDF
+                        className="bg-yellow-500 text-white p-3 rounded-md hover:bg-yellow-600 w-full md:w-auto"
+                      >
+                        Preview PDF
+                      </button>
 
-                    {/* Download PDF Button */}
-                    <button
-                      onClick={() => handleGeneratePDF()} // Download PDF
-                      className="bg-green-500 text-white p-3 rounded-md hover:bg-green-600 w-full md:w-auto"
-                    >
-                      Download PDF
-                    </button>
+                      {/* Download PDF Button */}
+                      <button
+                        onClick={() => handleGeneratePDF()} // Download PDF
+                        className="bg-green-500 text-white p-3 rounded-md hover:bg-green-600 w-full md:w-auto"
+                      >
+                        Download PDF
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
             </>
           )}
         </div>

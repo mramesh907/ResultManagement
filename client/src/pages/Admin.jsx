@@ -336,7 +336,7 @@ const Admin = () => {
               <a
                 href="https://drive.google.com/uc?export=download&id=1t-58BXVckDTzlkonGb5zQ3Ow1bYcKCJg"
                 download
-                className="flex items-center justify-center bg-green-500 text-white p-3 text-sm rounded-lg hover:bg-green-600 w-full mb-4 transition duration-200 ease-in-out"
+                className="flex items-center justify-center bg-green-500 text-white p-3 text-sm rounded-lg hover:bg-green-600 w-[50%] mb-4 transition duration-200 ease-in-out"
               >
                 <FaDownload className="mr-2" /> Download Demo Excel
               </a>

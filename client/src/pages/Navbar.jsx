@@ -11,7 +11,7 @@ const Navbar = ({ onSelectSection, selectedSection }) => {
           <div className="text-xl font-bold cursor-pointer mr-4">Dashboard</div>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex space-x-4">
+          <div className="hidden md:flex space-x-4 items-center justify-center">
             {[
               "marks",
               "upload",
@@ -24,11 +24,12 @@ const Navbar = ({ onSelectSection, selectedSection }) => {
               <div
                 key={section}
                 onClick={() => onSelectSection(section)}
-                className={`cursor-pointer px-4 py-2 rounded ${
+                className={`h-14 cursor-pointer px-4 py-2 rounded ${
                   selectedSection === section
                     ? "bg-white text-black shadow-md"
                     : "hover:bg-white hover:text-black"
                 }`}
+               
               >
                 {section === "marks" && "Manual Marks Entry"}
                 {section === "upload" && "Upload Results"}

@@ -19,13 +19,16 @@ import {
   authenticateStudent,
   createStudentPassword,
   resetStudentPassword,
+  verifyStudent,
 } from "../controllers/student.contoller.js" // Import the controller
 
 const router = express.Router()
 
 router.post("/create-password", createStudentPassword)
 router.post("/authenticate-student", authenticateStudent)
+router.post("/verify-student", verifyStudent)
 router.post('/reset-password',resetStudentPassword)
+
 
 // Public routes (unprotected)
 router.get("/checkStudentExist/:studentId", checkStudentExist) // Check if a student exists

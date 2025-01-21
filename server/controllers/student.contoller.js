@@ -49,6 +49,31 @@ export const createStudentPassword = async (studentId) => {
   }
 }
 
+export const verifyStudent=async(req,res)=>{
+  
+  try {
+    const { studentId, no } = req.body
+    console.log(`From request studentId ${studentId} no ${no}`) // Log the studentId and no (studentId no)
+    const student = await Student.findOne({ studentId })
+    console.log(`From Response studentId ${student.studentId} no ${student.no}`)
+    if (!student) {
+      return res.status(404).send("Student not found")
+    }
+    if (student.no !== no) {
+      return res.status(404).send("Student not found")
+    }
+
+    return res.status(200).json({
+      status: true,
+      message: "Email exists, proceed to change password",
+    })
+  } catch (error) {
+    console.log(error)
+    res
+      .status(500)
+      .json({ message: "Error verifying student.", error: error.message })
+  }
+}
 
 // Reset Password for an existing student
 export const resetStudentPassword = async (req, res) => {
@@ -76,7 +101,10 @@ export const resetStudentPassword = async (req, res) => {
       return res.status(400).send("Error updating password.");
     }
 
-    return res.status(200).send("Password reset successfully.");
+    return res.status(200).json({
+      status: true,
+      message: "Password reset successfully.",
+    })
   } catch (error) {
     return res.status(500).send("Error resetting password.");
   }

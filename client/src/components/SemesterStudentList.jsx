@@ -79,7 +79,7 @@ const SemesterStudentList = () => {
 
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
-      <div className="max-w-6xl mx-auto bg-white shadow-lg rounded-lg p-6">
+      <div className="max-w-6xl mx-auto bg-white shadow-lg hover:shadow-2xl rounded-lg p-6">
         <h1 className="text-2xl font-bold text-gray-700 mb-6">
           Semester Student List
         </h1>

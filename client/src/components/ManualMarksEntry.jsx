@@ -4,6 +4,7 @@ import { toast } from "react-hot-toast"
 
 const ManualMarksEntry = () => {
   const [semester, setSemester] = useState("")
+  const [isSemesterLocked, setIsSemesterLocked] = useState(false)
   const [subject, setSubject] = useState("")
   const [credit, setCredit] = useState("")
   const [course, setCourse] = useState("")
@@ -41,6 +42,10 @@ const ManualMarksEntry = () => {
         eseMarks: Number(eseMarks),
       },
     ])
+    // Lock the semester after the first addition if needed
+    if (!isSemesterLocked) {
+      setIsSemesterLocked(true)
+    }
     // Reset fields
     setSubject("")
     setCredit("")
@@ -103,7 +108,6 @@ const ManualMarksEntry = () => {
         papers,
         students,
       }
-      console.log('data', data);
       
       await SummaryApi.submitMarks(data)
       toast.success("Marks updated successfully!")
@@ -148,6 +152,8 @@ const ManualMarksEntry = () => {
               onChange={(e) => setSemester(e.target.value)}
               placeholder="Semester"
               className="p-2 border rounded"
+              onKeyDown={(e) => handleKeyDown(e)}
+              disabled={isSemesterLocked} // Disable if locked
               required
             />
             <input
@@ -156,14 +162,21 @@ const ManualMarksEntry = () => {
               onChange={(e) => setSubject(e.target.value)}
               placeholder="Subject"
               className="p-2 border rounded"
+              onKeyDown={(e) => handleKeyDown(e)}
               required
             />
             <input
               type="text"
               value={credit}
-              onChange={(e) => setCredit(e.target.value)}
+              onChange={(e) => {
+                if (/^\d*$/.test(e.target.value)) {
+                  // Only allow digits
+                  setCredit(e.target.value)
+                }
+              }}
               placeholder="Credit"
               className="p-2 border rounded"
+              onKeyDown={(e) => handleKeyDown(e)}
               required
             />
             <input
@@ -172,6 +185,7 @@ const ManualMarksEntry = () => {
               onChange={(e) => setCourse(e.target.value)}
               placeholder="Course"
               className="p-2 border rounded"
+              onKeyDown={(e) => handleKeyDown(e)}
               required
             />
             <input
@@ -180,6 +194,7 @@ const ManualMarksEntry = () => {
               onChange={(e) => setPaper(e.target.value)}
               placeholder="Paper"
               className="p-2 border rounded"
+              onKeyDown={(e) => handleKeyDown(e)}
               required
             />
             <input
@@ -188,22 +203,35 @@ const ManualMarksEntry = () => {
               onChange={(e) => setType(e.target.value)}
               placeholder="Type"
               className="p-2 border rounded"
+              onKeyDown={(e) => handleKeyDown(e)}
               required
             />
             <input
               type="text"
               value={ciaMarks}
-              onChange={(e) => setCiaMarks(e.target.value)}
+              onChange={(e) => {
+                if (/^\d*$/.test(e.target.value)) {
+                  // Only allow digits
+                  setCiaMarks(e.target.value)
+                }
+              }}
               placeholder="CIA Marks"
               className="p-2 border rounded"
+              onKeyDown={(e) => handleKeyDown(e)}
               required
             />
             <input
               type="text"
               value={eseMarks}
-              onChange={(e) => setEseMarks(e.target.value)}
+              onChange={(e) => {
+                if (/^\d*$/.test(e.target.value)) {
+                  // Only allow digits
+                  setEseMarks(e.target.value)
+                }
+              }}
               placeholder="ESE Marks"
               className="p-2 border rounded"
+              onKeyDown={(e) => handleKeyDown(e)}
               required
             />
           </div>
@@ -233,85 +261,88 @@ const ManualMarksEntry = () => {
           <h2 className="text-2xl font-semibold text-center mb-4">
             Student Marks
           </h2>
-          <table className="w-full border">
-            <thead>
-              <tr>
-                <th className="border px-2 py-1" rowSpan="2">
-                  Student ID
-                </th>
-                <th className="border px-2 py-1" rowSpan="2">
-                  Name
-                </th>
-                {papers.map((paper, index) => (
-                  <React.Fragment key={index}>
-                    <th colSpan="2" className="border px-2 py-1">
-                      {paper.paper} ({paper.type})
-                    </th>
-                  </React.Fragment>
-                ))}
-              </tr>
-              <tr>
-                {papers.map((paper, index) => (
-                  <React.Fragment key={index}>
-                    <th className="border px-2 py-1">CIA</th>
-                    <th className="border px-2 py-1">ESE</th>
-                  </React.Fragment>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {students.map((student) => (
-                <tr key={student.studentId}>
-                  <td className="border px-2 py-1">{student.studentId}</td>
-                  <td className="border px-2 py-1">{student.name}</td>
-                  {student.marks.map((mark, index) => (
+
+          <div className="overflow-x-auto">
+            <table className="min-w-full table-auto border-collapse">
+              <thead>
+                <tr>
+                  <th className="border px-2 py-1" rowSpan="2">
+                    Student ID
+                  </th>
+                  <th className="border px-2 py-1" rowSpan="2">
+                    Name
+                  </th>
+                  {papers.map((paper, index) => (
                     <React.Fragment key={index}>
-                      {/* Input for CIA Marks */}
-                      <td className="border px-2 py-1">
-                        <input
-                          type="text"
-                          value={mark.ciaMarks}
-                          onChange={(e) =>
-                            updateMarks(
-                              student.studentId,
-                              index,
-                              "ciaMarks",
-                              e.target.value
-                            )
-                          }
-                          onKeyDown={(e) => handleKeyDown(e)}
-                          placeholder="CIA"
-                          className="p-1 border rounded"
-                        />
-                      </td>
-                      {/* Input for ESE Marks */}
-                      <td className="border px-2 py-1">
-                        <input
-                          type="text"
-                          value={mark.eseMarks}
-                          onChange={(e) =>
-                            updateMarks(
-                              student.studentId,
-                              index,
-                              "eseMarks",
-                              e.target.value
-                            )
-                          }
-                          onKeyDown={(e) => handleKeyDown(e)}
-                          placeholder="ESE"
-                          className="p-1 border rounded"
-                        />
-                      </td>
+                      <th colSpan="2" className="border px-2 py-1">
+                        {paper.paper} ({paper.type})
+                      </th>
                     </React.Fragment>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+                <tr>
+                  {papers.map((paper, index) => (
+                    <React.Fragment key={index}>
+                      <th className="border px-2 py-1">CIA</th>
+                      <th className="border px-2 py-1">ESE</th>
+                    </React.Fragment>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {students.map((student) => (
+                  <tr key={student.studentId}>
+                    <td className="border px-2 py-1">{student.studentId}</td>
+                    <td className="border px-2 py-1">{student.name}</td>
+                    {student.marks.map((mark, index) => (
+                      <React.Fragment key={index}>
+                        {/* Input for CIA Marks */}
+                        <td className="border px-2 py-1">
+                          <input
+                            type="text"
+                            value={mark.ciaMarks}
+                            onChange={(e) =>
+                              updateMarks(
+                                student.studentId,
+                                index,
+                                "ciaMarks",
+                                e.target.value
+                              )
+                            }
+                            onKeyDown={(e) => handleKeyDown(e)}
+                            placeholder="CIA"
+                            className="p-1 border rounded w-full"
+                          />
+                        </td>
+                        {/* Input for ESE Marks */}
+                        <td className="border px-2 py-1">
+                          <input
+                            type="text"
+                            value={mark.eseMarks}
+                            onChange={(e) =>
+                              updateMarks(
+                                student.studentId,
+                                index,
+                                "eseMarks",
+                                e.target.value
+                              )
+                            }
+                            onKeyDown={(e) => handleKeyDown(e)}
+                            placeholder="ESE"
+                            className="p-1 border rounded w-full"
+                          />
+                        </td>
+                      </React.Fragment>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           <button
             onClick={handleSubmit}
-            className="bg-green-500 text-white px-4 py-2 rounded mt-4"
+            className="bg-green-500 text-white px-4 py-2 rounded mt-4 w-full sm:w-auto"
           >
             Submit Marks
           </button>

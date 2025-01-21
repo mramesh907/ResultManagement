@@ -4,6 +4,7 @@ import Home from "../pages/Home"
 import Student from "../pages/Student"
 import Admin from "../pages/Admin"
 import ForgotPassword from "../components/ForgotPassword"
+import ForgotPasswordStudent from "../components/ForgotPasswordStudent"
 
 const router = createBrowserRouter([
   {
@@ -25,6 +26,10 @@ const router = createBrowserRouter([
       {
         path: "/forgot-password", // Add the new route
         element: <ForgotPassword />, // Render ForgotPassword component
+      },
+      {
+        path: "/forgot-student-password", // Add the new route
+        element: <ForgotPasswordStudent />, // Render ForgotPassword component
       },
     ],
   },

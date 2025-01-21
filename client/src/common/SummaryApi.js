@@ -46,8 +46,12 @@ const SummaryApi = {
     apiRequest("/api/auth/signup", "POST", { email, password }),
   checkEmail: async (email) =>
     apiRequest("/api/auth/check-email", "POST", { email }),
+  verifyStudent: async (studentId, no) =>
+    apiRequest("/api/students/verify-student", "POST", { studentId, no }),
   resetPassword: async (email, newPassword) =>
     apiRequest("/api/auth/change-password", "POST", { email, newPassword }),
+  resetStudentPassword: async (studentId, newPassword) =>
+    apiRequest("/api/students/reset-password", "POST", { studentId, newPassword }),
   authenticateStudent: async (studentId, password) =>
     apiRequest("/api/students/authenticate-student", "POST", {
       studentId,
