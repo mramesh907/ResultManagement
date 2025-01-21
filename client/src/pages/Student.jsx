@@ -96,8 +96,8 @@ const Student = () => {
       }
     } finally {
       setLoading(false)
-      setStudentId("")
-      setSemester("")
+      // setStudentId("")
+      // setSemester("")
     }
   }
 
