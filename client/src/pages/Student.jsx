@@ -84,7 +84,7 @@ const Student = () => {
         toast.error("No data found for this student and semester.")
       }
     } catch (error) {
-      setSemesterData(null)
+      // setSemesterData(null)
       setGPA(null)
       setFetchAttempted(true)
        setDataFetchedSuccessfully(false)
