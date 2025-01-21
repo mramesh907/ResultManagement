@@ -20,6 +20,7 @@ import {
   createStudentPassword,
   resetStudentPassword,
   verifyStudent,
+  addStudentWithDynamicSemester,
 } from "../controllers/student.contoller.js" // Import the controller
 
 const router = express.Router()
@@ -31,6 +32,7 @@ router.post('/reset-password',resetStudentPassword)
 
 
 // Public routes (unprotected)
+router.post('/add-student-dynamic', addStudentWithDynamicSemester) // Add a new student
 router.get("/checkStudentExist/:studentId", checkStudentExist) // Check if a student exists
 router.get("/:studentId/semester/:semester", getStudentByIdAndSemester) // Fetch student details by student ID and semester
 router.get("/allstudents/:semester", getStudentsBySemester)

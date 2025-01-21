@@ -192,6 +192,84 @@ export const addNewStudent = async (req, res) => {
   }
 };
 
+export const addStudentWithDynamicSemester = async (req, res) => {
+  try {
+    const {
+      studentId,
+      name,
+      roll,
+      no,
+      registrationNo,
+      session,
+      year,
+      semester,
+    } = req.body
+
+    // Validate required fields
+    if (
+      !studentId ||
+      !name ||
+      !roll ||
+      !no ||
+      !registrationNo ||
+      !session ||
+      !year ||
+      !semester
+    ) {
+      return res.status(400).json({
+        success: false,
+        error: "All required fields must be filled.",
+      })
+    }
+
+    // Check if the student already exists
+    const existingStudent = await Student.findOne({ studentId })
+      if (existingStudent) {
+      return res.status(400).json({
+        success: false,
+        error: "Student with this ID already exists.",
+        data: existingStudent, // Include the existing student details if needed
+      })
+    }
+
+    // Create a new student document with the given semester
+    const newStudent = new Student({
+      studentId,
+      name,
+      roll,
+      no,
+      registrationNo,
+      session,
+      year,
+      semesters: [
+        {
+          semester: semester, // Dynamically set the semester from the request
+          results: [], // Initialize results as an empty array
+        },
+      ],
+    })
+
+    // Save the student to the database
+    const savedStudent = await newStudent.save()
+
+    // Generate password for the student after creating the document
+    const getPassword = await createStudentPassword(savedStudent.studentId)
+
+    res.status(201).json({
+      success: true,
+      message:
+        "Student created successfully with the specified semester and password set.",
+      student: newStudent,
+    })
+  } catch (error) {
+    console.error("Error adding new student with dynamic semester:", error)
+    res
+      .status(500)
+      .json({ success: false, error: "An error occurred while adding the student." })
+  }
+}
+
+
 
 // Function to import students from an Excel file
 export const importStudentsFromExcel = async (req, res) => {

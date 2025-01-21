@@ -15,6 +15,59 @@ const ManualMarksEntry = () => {
   const [papers, setPapers] = useState([])
   const [students, setStudents] = useState([])
   const [step, setStep] = useState(1)
+const [showPopup, setShowPopup] = useState(false)
+const [studentDetails, setStudentDetails] = useState({
+  studentId: "",
+  name: "",
+  roll: "",
+  no: "",
+  registrationNo: "",
+  session: "",
+  year: "",
+  semester: "",
+})
+const handleInputChange = (e) => {
+  const { name, value } = e.target
+  setStudentDetails((prev) => ({
+    ...prev,
+    [name]: value,
+  }))
+}
+
+
+  const handleAddStudent = async () => {
+    try {
+      const response = await SummaryApi.addStudentWithDynamicSemester(
+        studentDetails
+      )
+
+      if (response.success) {
+        toast.success("Student added successfully!")
+        setShowPopup(false) // Close the popup after success
+        setStudentDetails({
+          studentId: "",
+          name: "",
+          roll: "",
+          no: "",
+          registrationNo: "",
+          session: "",
+          year: "",
+          semester: "",
+        })
+      } else if (response.error === "Student with this ID already exists.") {
+        toast.error("Student already exists!")
+        console.log("Existing student data:", response.data) // Optional: log existing student details
+      } else {
+        toast.error(response.error || "Failed to add student.")
+      }
+    } catch (error) {
+      toast.error(
+        error.response?.data?.error ||
+          "An unexpected error occurred while adding the student."
+      )
+    }
+  }
+
 
   // Add paper details to the list
   const addPaper = () => {
@@ -142,6 +195,66 @@ const ManualMarksEntry = () => {
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
       {step === 1 && (
         <>
+          {/* Add Student Button */}
+          <button
+            onClick={() => setShowPopup(true)}
+            className="bg-purple-500 text-white px-4 py-2 rounded mb-4"
+          >
+            Add Student
+          </button>
+
+          {/* Popup Form */}
+          {showPopup && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+              <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full md:w-1/2 lg:w-1/3 border-2 border-gray-300 overflow-y-auto max-h-[90vh]">
+                <h2 className="text-xl font-semibold text-center text-gray-800 mb-6">
+                  Add New Student
+                </h2>
+                <div className="space-y-6">
+                  {[
+                    { name: "studentId", label: "Student ID" },
+                    { name: "name", label: "Name" },
+                    { name: "roll", label: "Roll" },
+                    { name: "no", label: "No" },
+                    { name: "registrationNo", label: "Registration No" },
+                    { name: "session", label: "Session" },
+                    { name: "year", label: "Year" },
+                    { name: "semester", label: "Semester" },
+                  ].map((field) => (
+                    <div key={field.name}>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        {field.label}
+                      </label>
+                      <input
+                        type="text"
+                        name={field.name}
+                        value={studentDetails[field.name]}
+                        onChange={handleInputChange}
+                        placeholder={`Enter ${field.label}`}
+                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                        required
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-end mt-6 space-x-4">
+                  <button
+                    onClick={() => setShowPopup(false)}
+                    className="bg-red-500 text-white px-5 py-2 rounded-lg shadow hover:bg-red-600 transition duration-200"
+                  >
+                    Close
+                  </button>
+                  <button
+                    onClick={handleAddStudent}
+                    className="bg-green-500 text-white px-5 py-2 rounded-lg shadow hover:bg-green-600 transition duration-200"
+                  >
+                    Add Student
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <h2 className="text-2xl font-semibold text-center mb-4">
             Paper Details
           </h2>

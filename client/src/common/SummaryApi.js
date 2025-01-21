@@ -51,13 +51,18 @@ const SummaryApi = {
   resetPassword: async (email, newPassword) =>
     apiRequest("/api/auth/change-password", "POST", { email, newPassword }),
   resetStudentPassword: async (studentId, newPassword) =>
-    apiRequest("/api/students/reset-password", "POST", { studentId, newPassword }),
+    apiRequest("/api/students/reset-password", "POST", {
+      studentId,
+      newPassword,
+    }),
   authenticateStudent: async (studentId, password) =>
     apiRequest("/api/students/authenticate-student", "POST", {
       studentId,
       password,
     }),
   // Student Management
+  addStudentWithDynamicSemester: async (studentData) =>
+    apiRequest("/api/students/add-student-dynamic", "POST", studentData),
   addStudent: async (studentData) =>
     apiRequest("/api/students/add-student", "POST", studentData),
   resultsUpload: async (studentData) =>
