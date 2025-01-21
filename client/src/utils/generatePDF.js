@@ -153,70 +153,19 @@ const generatePDF = (semesterData, gpa, preview = false) => {
     })
   })
 
+  const sem=semesterData.semester.semester
+  const semNo=gpa.semesters[sem-1]
   // Calculate Totals
-  const totalCredits = semesterData.semester.results.reduce(
-    (sum, row) =>
-      sum + row.types.reduce((subSum, type) => subSum + (type.credit || 0), 0),
-    0
-  )
+  const totalCredits = semNo.totalCredits
 
-  const totalCreditPoints = semesterData.semester.results.reduce((sum, row) => {
-    return (
-      sum +
-      row.types.reduce((subSum, type) => {
-        const maxMarks = (type.ciaMarks || 0) + (type.eseMarks || 0)
-        const marksObtained =
-          (type.ciamarksObtained || 0) + (type.esemarksObtained || 0)
-        const percentage = (marksObtained / maxMarks) * 100
-
-        let gradePoints
-        if (percentage >= 90) {
-          gradePoints = 10
-        } else if (percentage >= 80) {
-          gradePoints = 9
-        } else if (percentage >= 70) {
-          gradePoints = 8
-        } else if (percentage >= 60) {
-          gradePoints = 7
-        } else if (percentage >= 50) {
-          gradePoints = 6
-        } else if (percentage >= 40) {
-          gradePoints = 5
-        } else if (percentage >= 30) {
-          gradePoints = 4
-        } else {
-          gradePoints = 0
-        }
-
-        const creditPoints = (type.credit || 0) * gradePoints
-        return subSum + creditPoints
-      }, 0)
-    )
-  }, 0)
+  const totalCreditPoints = semNo.totalCreditPoints
 
   const sgpa =
-    totalCredits > 0 ? (totalCreditPoints / totalCredits).toFixed(2) : "N/A"
+    semNo.sgpa
 
-  const totalMarksObtained = semesterData.semester.results.reduce(
-    (sum, row) =>
-      sum +
-      row.types.reduce(
-        (subSum, type) =>
-          subSum + (type.ciamarksObtained || 0) + (type.esemarksObtained || 0),
-        0
-      ),
-    0
-  )
-  const totalFullMarks = semesterData.semester.results.reduce(
-    (sum, row) =>
-      sum +
-      row.types.reduce(
-        (subSum, type) => subSum + (type.ciaMarks || 0) + (type.eseMarks || 0),
-        0
-      ),
-    0
-  )
-  const percentage = (totalMarksObtained / totalFullMarks) * 100
+  const totalMarksObtained = semNo.totalMarks
+  const totalFullMarks = semNo.maxMarks
+  const percentage = semNo.percentageObtained
 
   let resultRemark = "Not Qualified"
   let resultClass = "Fail"
@@ -304,23 +253,29 @@ const generatePDF = (semesterData, gpa, preview = false) => {
 
   let cgpaforsem
   const summaryData = gpa.semesters
-    // .filter((result) => result.semester <= semesterData.semester.semester) // Filter semesters based on the current semester
+    .filter((result) => result.semester <= semesterData.semester.semester) // Filter semesters based on the current semester
     .map((result) => {
-      if (result.semester === semesterData.semester.semester) {
-        cgpaforsem = result.cgpa
-      }
       // Get the YGPA for the corresponding year
       let ygpa = "N/A"
       const yearIndex = Math.floor((result.semester - 1) / 2) // Assuming semesters 1-2 are Year 1, 3-4 are Year 2, etc.
-
-      if (yearIndex < gpa.ygpa.length) {
-        ygpa = gpa.ygpa[yearIndex].ygpa || "N/A"
+      if(result.cgpa !== null){
+        cgpaforsem = result.cgpa
+      }else{
+        cgpaforsem = "N/A"
       }
+      if(result.semester % 2 === 0){
+        if (yearIndex < gpa.ygpa.length) {
+          ygpa = gpa.ygpa[yearIndex].ygpa || "N/A"
+        }
+      }else{
+        ygpa = "N/A"
+      }
+      
       return [
         result.semester || "N/A",
         result.sgpa || "N/A",
         result.cgpa || "N/A",
-        ygpa || "N/A",
+        ygpa,
         result.totalCredits || "N/A",
         result.totalCreditPoints || "N/A",
         result.maxMarks || "N/A",
@@ -336,7 +291,11 @@ const generatePDF = (semesterData, gpa, preview = false) => {
     marginLeft,
     currentY + rowHeight + 10
   )
-  doc.text(`CGPA: ${cgpaforsem}`, rightColumnX, currentY + rowHeight)
+
+  if(cgpaforsem !== "N/A") {
+      doc.text(`CGPA: ${cgpaforsem}`, rightColumnX, currentY + rowHeight)
+  }
+
   doc.text(
     `Total Marks Obtained: ${totalMarksObtained}`,
     rightColumnX,
@@ -346,7 +305,7 @@ const generatePDF = (semesterData, gpa, preview = false) => {
 
   currentY = checkAndAddPage(doc, currentY)
 
-  doc.text(`Percentage: ${percentage.toFixed(2)}%`, marginLeft, currentY + 10)
+  doc.text(`Percentage: ${percentage}%`, marginLeft, currentY + 10)
   doc.text(`Result: ${resultClass}`, rightColumnX, currentY + 10)
   currentY += rowHeight
 

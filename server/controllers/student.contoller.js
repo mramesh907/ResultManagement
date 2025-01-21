@@ -204,8 +204,9 @@ export const importStudentsFromExcel = async (req, res) => {
           })
         }
 
-        const students = []
         let updatedStudents = 0
+        let newStudents = 0
+
         for (const row of data) {
           const {
             "Student ID": studentId,
@@ -235,88 +236,23 @@ export const importStudentsFromExcel = async (req, res) => {
             })
           }
 
-          const results = []
-          for (const key in subjectData) {
-            const match = key.match(
-              /^(.+?)\((.+?),(.+?),(.+?),(\d+),(\d+),(\d+)\)$/
-            )
-            if (match) {
-              const [
-                ,
-                paper,
-                course,
-                subject,
-                type,
-                ciaMarks,
-                eseMarks,
-                credit,
-              ] = match
-              const [ciamarksObtained, esemarksObtained] = (
-                subjectData[key] || "0,0"
-              )
-                .split(",")
-                .map(Number) // Extract marks
-
-              // Validation: Check if obtained marks are valid
-              if (
-                ciamarksObtained > Number(ciaMarks) ||
-                esemarksObtained > Number(eseMarks)
-              ) {
-                fs.unlinkSync(filePath) // Delete the temporary file
-                return res.status(400).json({
-                  message: `Invalid marks in subject: ${paper}. Obtained marks exceed maximum marks.`,
-                  subject: paper,
-                  ciamarksObtained,
-                  esemarksObtained,
-                  ciaMarks,
-                  eseMarks,
-                })
-              }
-
-              results.push({
-                subject: subject.trim(),
-                course: course.trim(),
-                paper: paper.trim(),
-                types: [
-                  {
-                    type: type.trim(),
-                    ciaMarks: Number(ciaMarks),
-                    eseMarks: Number(eseMarks),
-                    credit: Number(credit),
-                    ciamarksObtained: Number(ciamarksObtained),
-                    esemarksObtained: Number(esemarksObtained),
-                  },
-                ],
-              })
-            }
-          }
+          const results = parseSubjectData(subjectData)
 
           const existingStudent = await Student.findOne({ studentId })
+
           if (existingStudent) {
-            const existingSemester = existingStudent.semesters.find(
-              (sem) => String(sem.semester).trim() === String(semester).trim()
+            // Update the existing student if found
+            const isUpdated = updateExistingStudent(
+              existingStudent,
+              semester,
+              results
             )
-
-            if (existingSemester) {
-              results.forEach((result) => {
-                const existingSubject = existingSemester.results.find(
-                  (res) => res.subject === result.subject
-                )
-                if (existingSubject) {
-                  existingSubject.types = result.types
-                    } else {
-                  existingSemester.results.push(result)
-                }
-              })
-
-              await existingStudent.save()
-            } else {
-              existingStudent.semesters.push({ semester, results })
+            if (isUpdated) {
+              updatedStudents++
               await existingStudent.save()
             }
-
-              updatedStudents++
           } else {
+            // Save the new student and create password
             const newStudent = new Student({
               studentId,
               name,
@@ -327,19 +263,19 @@ export const importStudentsFromExcel = async (req, res) => {
               year,
               semesters: [{ semester, results }],
             })
-            students.push(newStudent)
-          }
-        }
 
-        if (students.length > 0) {
-          await Student.insertMany(students)
+            // Save the new student and create password
+            await newStudent.save()
+            await createStudentPassword(newStudent.studentId)
+            newStudents++
+          }
         }
 
         fs.unlinkSync(filePath)
 
         res.status(200).json({
           message: "Students imported successfully",
-          newStudents: students.length,
+          newStudents,
           updatedStudents,
         })
       } catch (error) {
@@ -357,6 +293,108 @@ export const importStudentsFromExcel = async (req, res) => {
     })
   }
 }
+
+
+// Utility function to parse subject data
+const parseSubjectData = (subjectData) => {
+  const results = []
+
+  for (const key in subjectData) {
+    const match = key.match(/^(.+?)\((.+?),(.+?),(.+?),(\d+),(\d+),(\d+)\)$/)
+    if (match) {
+      const [, paper, course, subject, type, ciaMarks, eseMarks, credit] = match
+      const [ciamarksObtained, esemarksObtained] = (subjectData[key] || "0,0")
+        .split(",")
+        .map(Number)
+
+      if (
+        ciamarksObtained > Number(ciaMarks) ||
+        esemarksObtained > Number(eseMarks)
+      ) {
+        throw new Error(`Invalid marks for subject: ${paper}`)
+      }
+
+      let existingPaper = results.find(
+        (result) => result.paper === paper.trim()
+      )
+      if (!existingPaper) {
+        existingPaper = {
+          subject: subject.trim(),
+          course: course.trim(),
+          paper: paper.trim(),
+          types: [],
+        }
+        results.push(existingPaper)
+      }
+
+      existingPaper.types.push({
+        type: type.trim(),
+        ciaMarks: Number(ciaMarks),
+        eseMarks: Number(eseMarks),
+        credit: Number(credit),
+        ciamarksObtained,
+        esemarksObtained,
+      })
+    }
+  }
+
+  return results
+}
+
+// Utility function to update existing student
+const updateExistingStudent = (student, semester, results) => {
+  // Check if the semester already exists for the student
+  const existingSemester = student.semesters.find(
+    (sem) => String(sem.semester).trim() === String(semester).trim()
+  )
+
+  if (existingSemester) {
+    // If the semester exists, update the existing results
+    results.forEach((newResult) => {
+      const existingPaper = existingSemester.results.find(
+        (res) => res.paper === newResult.paper
+      )
+
+      if (existingPaper) {
+        // Update existing papers within the semester
+        newResult.types.forEach((newType) => {
+          const existingType = existingPaper.types.find(
+            (type) => type.type === newType.type
+          )
+
+          if (existingType) {
+            // Update existing type with new data
+            existingType.ciaMarks = newType.ciaMarks
+            existingType.eseMarks = newType.eseMarks
+            existingType.credit = newType.credit
+            existingType.ciamarksObtained = newType.ciamarksObtained
+            existingType.esemarksObtained = newType.esemarksObtained
+          } else {
+            // If the type doesn't exist, add it to the paper
+            existingPaper.types.push(newType)
+          }
+        })
+      } else {
+        // If the paper doesn't exist, add it to the semester
+        existingSemester.results.push(newResult)
+      }
+    })
+
+    return true
+  } else {
+    // If the semester doesn't exist, create a new semester with the results
+    student.semesters.push({
+      semester,
+      results,
+    })
+    return true // Return true to indicate a new semester was created
+  }
+
+  return false // If no updates or changes were made, return false
+}
+
+
+
 
 // Manually update marks for student
 export const updateMarksForSemester = async (req, res) => {
@@ -564,7 +602,7 @@ export const submitMarks = async (req, res) => {
   try {
     const { semester, papers, students } = req.body
 
-    // Validate that semester, papers, and students are provided
+    // Validate that semester and papers are provided
     if (!semester || !Array.isArray(papers) || papers.length === 0) {
       return res
         .status(400)
@@ -588,36 +626,6 @@ export const submitMarks = async (req, res) => {
         return res.status(400).json({ error: "Student data is incomplete." })
       }
 
-      // Ensure marks for each paper are valid
-      for (const mark of marks) {
-        const { paperName, ciaMarks, eseMarks } = mark
-        if (!paperName || ciaMarks === undefined || eseMarks === undefined) {
-          return res.status(400).json({ error: "Mark details are incomplete." })
-        }
-
-        // Find the paper in the papers array to get maxCIA and maxESE marks
-        const paperDetails = papers.find((paper) => paper.paper === paperName)
-        if (!paperDetails) {
-          return res.status(400).json({
-            error: `Paper ${paperName} not found in the provided paper list.`,
-          })
-        }
-
-        const { ciaMarks: maxCiaMarks, eseMarks: maxEseMarks } = paperDetails
-
-        // Validate obtained marks are within the dynamic allowed range based on paper details
-        if (
-          parseInt(ciaMarks) > maxCiaMarks ||
-          parseInt(eseMarks) > maxEseMarks ||
-          parseInt(ciaMarks) < 0 ||
-          parseInt(eseMarks) < 0
-        ) {
-          return res.status(400).json({
-            error: `Invalid marks for paper: ${paperName}. CIA Marks should be between 0 and ${maxCiaMarks}, and ESE Marks should be between 0 and ${maxEseMarks}.`,
-          })
-        }
-      }
-
       // Find the student record
       const studentRecord = await Student.findOne({ studentId })
 
@@ -631,9 +639,9 @@ export const submitMarks = async (req, res) => {
         (s) => s.semester === semester
       )
       if (!semesterRecord) {
-        return res.status(400).json({
-          error: `Semester ${semester} not found for student ${studentId}.`,
-        })
+        // If semester doesn't exist for the student, we can create it.
+        semesterRecord = { semester, results: [] }
+        studentRecord.semesters.push(semesterRecord)
       }
 
       // Process each paper for the student
@@ -647,14 +655,14 @@ export const submitMarks = async (req, res) => {
           eseMarks: maxEseMarks,
         } = paper
 
-        // Find marks for the corresponding paper
-        const paperMarks = marks.find((m) => m.paperName === paperName)
+        // Find the marks for the current paper
+        const paperMarks = marks.find((mark) => mark.paperName === paperName)
         if (!paperMarks) continue // Skip if no marks for the current paper
 
         const { ciaMarks: obtainedCiaMarks, eseMarks: obtainedEseMarks } =
           paperMarks
 
-        // Find the subject record for the semester
+        // Find or create the result record for the subject
         let subjectRecord = semesterRecord.results.find(
           (result) =>
             result.subject === subject &&
@@ -687,7 +695,7 @@ export const submitMarks = async (req, res) => {
             typeRecord.ciamarksObtained = obtainedCiaMarks
             typeRecord.esemarksObtained = obtainedEseMarks
           } else {
-            // If the type doesn't exist, create a new type record
+            // If type doesn't exist, create a new type record
             subjectRecord.types.push({
               type,
               credit: paper.credit,
@@ -700,20 +708,14 @@ export const submitMarks = async (req, res) => {
         }
       }
 
-      // Save the updated student record without validation for fields like `no`
-      await Student.updateOne(
-        { studentId },
-        { $set: { semesters: studentRecord.semesters } },
-        { runValidators: false } // Skips validation for unnecessary fields like `no`
-      )
+      // Save the updated student record
+      await studentRecord.save()
     }
 
     // If some students were not found, send an error response
     if (notFoundStudents.length > 0) {
       return res.status(404).json({
-        error: `The following students were not found: ${notFoundStudents.join(
-          ", "
-        )}`,
+        error: `The following students were not found: ${notFoundStudents.join(", ")}`,
       })
     }
 
@@ -726,6 +728,7 @@ export const submitMarks = async (req, res) => {
     res.status(500).json({ error: "An error occurred while submitting marks." })
   }
 }
+
 
 
 
@@ -1351,14 +1354,14 @@ export const calculateGPA = async (req, res) => {
     totalCredits += currentCredits
     totalCreditPoints += currentCreditPoints
 
-    // Calculate the CGPA so far
+    // Calculate the CGPA so far (only for the 8th semester)
     const cgpa =
-      totalCredits > 0 ? (totalCreditPoints / totalCredits).toFixed(2) : "N/A"
+      index === 7 ? (totalCreditPoints / totalCredits).toFixed(2) : null // Only set CGPA for the 8th semester
 
     return {
       semester: semesterData.semester,
       sgpa: sgpa,
-      cgpa: cgpa, // Cumulative CGPA
+      cgpa: cgpa, // Only set for the 8th semester
       totalCredits: currentCredits,
       totalCreditPoints: currentCreditPoints,
       maxMarks: semesterData.results.reduce((sum, row) => {
@@ -1415,15 +1418,15 @@ export const calculateGPA = async (req, res) => {
     }
   })
 
-  // Calculate YGPA based on number of semesters
+  // Calculate YGPA based on number of semesters (for even semesters)
   const ygpas = []
-  for (let i = 0; i < student.semesters.length; i += 2) {
+  for (let i = 1; i < student.semesters.length; i += 2) {
     const yearData = {
-      year: Math.ceil((i + 1) / 2),
+      year: Math.ceil(i / 2),
     }
 
-    const sem1SGPA = parseFloat(cgpas[i]?.sgpa || 0)
-    const sem2SGPA = parseFloat(cgpas[i + 1]?.sgpa || 0)
+    const sem1SGPA = parseFloat(cgpas[i - 1]?.sgpa || 0)
+    const sem2SGPA = parseFloat(cgpas[i]?.sgpa || 0)
     if (sem2SGPA) {
       yearData.ygpa = ((sem1SGPA + sem2SGPA) / 2).toFixed(2)
     } else {
@@ -1433,12 +1436,14 @@ export const calculateGPA = async (req, res) => {
     ygpas.push(yearData)
   }
 
-  // Return the SGPA, CGPA, and YGPA for each semester and year
+  // Return the SGPA, YGPA, and CGPA (only for 8th semester)
   return res.status(200).json({
     semesters: cgpas,
     ygpa: ygpas,
   })
 }
+
+
 
 // Comparison student
 export const getComparisonStudent = async (req, res) => {

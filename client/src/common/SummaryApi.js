@@ -23,7 +23,7 @@ const apiRequest = async (url, method, data = null, isSignIn = false) => {
       withCredentials: true, // Include credentials (cookies) for cross-origin requests
     })
 
-    console.log("API Response:", response.data)
+    // console.log("API Response:", response.data)
     return response.data // Return the response data
   } catch (error) {
     // console.log("API Error:", error.response.data.message)
