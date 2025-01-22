@@ -1363,9 +1363,6 @@ export const calculateGPA = async (req, res) => {
     console.error("Student not found.")
     return res.status(404).send("Student not found.")
   }
-  if(semesterData.results.length == 0) {
-    return res.status(404).send("Student results not found.")
-  }
 
   // Function to calculate SGPA for a specific semester
   const getSGPA = (semesterData) => {
