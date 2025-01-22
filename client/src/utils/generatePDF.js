@@ -154,7 +154,8 @@ const generatePDF = (semesterData, gpa, preview = false) => {
   })
 
   const sem=semesterData.semester.semester
-  const semNo=gpa.semesters[sem-1]
+  const index = gpa.semesters.findIndex((reqsem) => reqsem.semester === sem)
+  const semNo=gpa.semesters[index]
   // Calculate Totals
   const totalCredits = semNo.totalCredits
 
