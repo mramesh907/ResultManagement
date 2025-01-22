@@ -5,6 +5,11 @@ import { toast } from "react-hot-toast"
 const ManualMarksEntry = () => {
   const [semester, setSemester] = useState("")
   const [isSemesterLocked, setIsSemesterLocked] = useState(false)
+  const [showUpgradePopup, setShowUpgradePopup] = useState(false)
+  const [upgradeDetails, setUpgradeDetails] = useState({
+    currentSemester: "",
+    upgradeSemester: "",
+  })
   const [subject, setSubject] = useState("")
   const [credit, setCredit] = useState("")
   const [course, setCourse] = useState("")
@@ -15,31 +20,29 @@ const ManualMarksEntry = () => {
   const [papers, setPapers] = useState([])
   const [students, setStudents] = useState([])
   const [step, setStep] = useState(1)
-const [showPopup, setShowPopup] = useState(false)
-const [studentDetails, setStudentDetails] = useState({
-  studentId: "",
-  name: "",
-  roll: "",
-  no: "",
-  registrationNo: "",
-  session: "",
-  year: "",
-  semester: "",
-})
-const handleInputChange = (e) => {
-  const { name, value } = e.target
-  setStudentDetails((prev) => ({
-    ...prev,
-    [name]: value,
-  }))
-}
-
+  const [showPopup, setShowPopup] = useState(false)
+  const [studentDetails, setStudentDetails] = useState({
+    studentId: "",
+    name: "",
+    roll: "",
+    no: "",
+    registrationNo: "",
+    session: "",
+    year: "",
+    semester: "1",
+  })
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setStudentDetails((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
+  }
 
   const handleAddStudent = async () => {
     try {
-      const response = await SummaryApi.addStudentWithDynamicSemester(
-        studentDetails
-      )
+      const response =
+        await SummaryApi.addStudentWithDynamicSemester(studentDetails)
 
       if (response.success) {
         toast.success("Student added successfully!")
@@ -52,7 +55,7 @@ const handleInputChange = (e) => {
           registrationNo: "",
           session: "",
           year: "",
-          semester: "",
+          semester: "1",
         })
       } else if (response.error === "Student with this ID already exists.") {
         toast.error("Student already exists!")
@@ -67,7 +70,6 @@ const handleInputChange = (e) => {
       )
     }
   }
-
 
   // Add paper details to the list
   const addPaper = () => {
@@ -161,7 +163,7 @@ const handleInputChange = (e) => {
         papers,
         students,
       }
-      
+
       await SummaryApi.submitMarks(data)
       toast.success("Marks updated successfully!")
       // Reset state
@@ -189,7 +191,65 @@ const handleInputChange = (e) => {
     }
   }
 
+   const handleUpgradeInputChange = (e) => {
+     const { name, value } = e.target
+     setUpgradeDetails((prev) => ({
+       ...prev,
+       [name]: value,
+     }))
+   }
 
+  const handleUpgradeStudents = async () => {
+    const { currentSemester, upgradeSemester } = upgradeDetails
+
+    if (!currentSemester || !upgradeSemester) {
+      toast.error("Both semesters are required.")
+      return
+    }
+
+   try {
+     const response = await SummaryApi.upgradeSemester(
+       currentSemester,
+       upgradeSemester
+     )
+
+     if (response.success) {
+       toast.success(
+         `${response.message} Already upgraded: ${response.alreadyUpgraded}`
+       )
+       setShowUpgradePopup(false)
+       setUpgradeDetails({ currentSemester: "", upgradeSemester: "" })
+     } else if (response.error) {
+       // Specific error messages from the backend
+       if (
+         response.error.includes("Invalid current or upgrade semester value")
+       ) {
+         toast.error(
+           "Invalid semester values. Only one semester upgrade is allowed."
+         )
+       } else if (response.error.includes("No students found in semester")) {
+         toast.error(`No students found in semester ${currentSemester}.`)
+       } else if (
+         response.error.includes(
+           "All students in semester already have semester"
+         )
+       ) {
+         toast.error(
+           `All students in semester ${currentSemester} have already been upgraded to semester ${upgradeSemester}.`
+         )
+       } else {
+        setUpgradeDetails({ currentSemester: "", upgradeSemester: "" })
+         toast.error(response.error || "Failed to upgrade students.")
+       }
+     }
+   } catch (error) {
+     // Catch unexpected errors
+     toast.error(
+       error.response?.data?.error ||
+         "An unexpected error occurred while upgrading students."
+     )
+   }
+  }
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
@@ -198,9 +258,15 @@ const handleInputChange = (e) => {
           {/* Add Student Button */}
           <button
             onClick={() => setShowPopup(true)}
-            className="bg-purple-500 text-white px-4 py-2 rounded mb-4"
+            className="bg-purple-500 text-white px-4 py-2 rounded mb-4 mr-2 hover:bg-purple-600"
           >
             Add Student
+          </button>
+          <button
+            onClick={() => setShowUpgradePopup(true)}
+            className="bg-yellow-500 text-white px-4 py-2 rounded mb-4 hover:bg-yellow-600"
+          >
+            Upgrade Students
           </button>
 
           {/* Popup Form */}
@@ -219,7 +285,7 @@ const handleInputChange = (e) => {
                     { name: "registrationNo", label: "Registration No" },
                     { name: "session", label: "Session" },
                     { name: "year", label: "Year" },
-                    { name: "semester", label: "Semester" },
+                    // { name: "semester", label: "Semester" },
                   ].map((field) => (
                     <div key={field.name}>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -249,6 +315,66 @@ const handleInputChange = (e) => {
                     className="bg-green-500 text-white px-5 py-2 rounded-lg shadow hover:bg-green-600 transition duration-200"
                   >
                     Add Student
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          {/* Upgrade Popup */}
+          {showUpgradePopup && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+              <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full md:w-1/2 lg:w-1/3 border-2 border-gray-300 overflow-y-auto max-h-[90vh]">
+                <h2 className="text-xl font-semibold text-center text-gray-800 mb-6">
+                  Upgrade Students
+                </h2>
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Current Semester
+                    </label>
+                    <input
+                      type="text"
+                      name="currentSemester"
+                      value={upgradeDetails.currentSemester}
+                      onChange={handleUpgradeInputChange}
+                      placeholder="Enter Current Semester"
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Upgrade Semester
+                    </label>
+                    <input
+                      type="text"
+                      name="upgradeSemester"
+                      value={upgradeDetails.upgradeSemester}
+                      onChange={handleUpgradeInputChange}
+                      placeholder="Enter Upgrade Semester"
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                      required
+                    />
+                    
+                      <p className="text-red-500 text-sm mt-2">
+                        Only one semester upgrade is allowed. For example, if
+                        the current semester is 3, the upgrade semester must be
+                        4.
+                      </p>
+                  </div>
+                </div>
+                <div className="flex justify-end mt-6 space-x-4">
+                  <button
+                    onClick={() => setShowUpgradePopup(false)}
+                    className="bg-red-500 text-white px-5 py-2 rounded-lg shadow hover:bg-red-600 transition duration-200"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleUpgradeStudents}
+                    className="bg-green-500 text-white px-5 py-2 rounded-lg shadow hover:bg-green-600 transition duration-200"
+                  >
+                    Upgrade
                   </button>
                 </div>
               </div>
@@ -466,4 +592,3 @@ const handleInputChange = (e) => {
 }
 
 export default ManualMarksEntry
-

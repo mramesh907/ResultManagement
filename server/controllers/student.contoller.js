@@ -6,6 +6,7 @@ import xlsx from "xlsx"
 import fs from "fs"
 import path from "path"
 import { fileURLToPath } from "url"
+import { error } from "console"
 // import upload from "../config/upload.js"
 
 // Get the current directory path
@@ -23,7 +24,6 @@ export const createStudentPassword = async (studentId) => {
 
     // Generate the default password using studentId and no
     const defaultPassword = `${student.studentId}-${student.no}`
-    console.log("defaultPassword", defaultPassword)
 
     // Hash the default password
     const salt = await bcrypt.genSalt(10)
@@ -36,7 +36,7 @@ export const createStudentPassword = async (studentId) => {
     })
 
     const savedPassword = await newPassword.save()
-    console.log("Password created and hashed successfully.")
+    // console.log("Password created and hashed successfully.")
 
     // Return the saved password or success message
     return {
@@ -665,9 +665,6 @@ export const updateMarksForSemester = async (req, res) => {
 }
 
 
-
-
-
 export const getStudentsBySemester = async (req, res) => {
   try {
     const { semester } = req.params
@@ -700,7 +697,77 @@ export const getStudentsBySemester = async (req, res) => {
   }
 }
 
+// Function to upgrade a student's semester
+export const upgradeSemester = async (req, res) => {
+  try {
+    const { currentSemester, upgradeSemester } = req.body
+    // Validate the current and upgrade semester parameters
+    const validSemesters = ["1", "2", "3", "4", "5", "6", "7", "8"]
+    if (
+      !currentSemester ||
+      !upgradeSemester ||
+      !validSemesters.includes(currentSemester) ||
+      !validSemesters.includes(upgradeSemester) ||
+      parseInt(upgradeSemester) !== parseInt(currentSemester) + 1
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Invalid current or upgrade semester value." })
+    }
 
+    // Find students in the current semester
+    const students = await Student.find({
+      "semesters.semester": currentSemester,
+    })
+
+    if (students.length === 0) {
+      return res
+        .status(404)
+        .json({ error: `No students found in semester ${currentSemester}.` })
+    }
+
+    // Separate students who already have the upgrade semester
+    const studentsWithUpgradeSemester = students.filter((student) =>
+      student.semesters.some((sem) => sem.semester === upgradeSemester)
+    )
+
+    const studentsWithoutUpgradeSemester = students.filter(
+      (student) =>
+        !student.semesters.some((sem) => sem.semester === upgradeSemester)
+    )
+
+    // If no students are eligible for an upgrade
+    if (studentsWithoutUpgradeSemester.length === 0) {
+      return res.status(400).json({
+        error: `All students in semester ${currentSemester} already have semester ${upgradeSemester}.`,
+      })
+    }
+
+    // Prepare bulk operations for students who don't have the upgrade semester
+    const bulkOps = studentsWithoutUpgradeSemester.map((student) => ({
+      updateOne: {
+        filter: { _id: student._id },
+        update: {
+          $addToSet: {
+            semesters: { semester: upgradeSemester, results: [] },
+          },
+        },
+      },
+    }))
+
+    // Execute the bulk update operation
+    await Student.bulkWrite(bulkOps)
+
+    return res.status(200).json({
+      success: true,
+      message: `Successfully upgraded ${studentsWithoutUpgradeSemester.length} students to semester ${upgradeSemester}.`,
+      alreadyUpgraded: studentsWithUpgradeSemester.length,
+    })
+  } catch (error) {
+    console.error("Error upgrading semester:", error)
+    res.status(500).json({ error: "Internal Server Error." })
+  }
+}
 
 
 // Function to handle the submission of marks
@@ -834,12 +901,6 @@ export const submitMarks = async (req, res) => {
     res.status(500).json({ error: "An error occurred while submitting marks." })
   }
 }
-
-
-
-
-
-
 
 // Get student details by student ID and semester number
 export const getStudentByIdAndSemester = async (req, res) => {
@@ -1062,8 +1123,7 @@ export const getTopRankers = async (req, res) => {
   }
 }
 
-// Calculate CGPA
-// Calculate CGPA across all semesters
+
 // Calculate CGPA across all semesters
 export const calculateCGPA = async (req, res) => {
   const { studentId } = req.params
@@ -1550,7 +1610,6 @@ export const calculateGPA = async (req, res) => {
 }
 
 
-
 // Comparison student
 export const getComparisonStudent = async (req, res) => {
   const { studentId1, studentId2, semester } = req.params
@@ -1671,5 +1730,117 @@ export const semesterPerformance = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error fetching semester-wise performance", error })
+  }
+}
+
+
+export const uploadStudentsFromExcel = async (req, res) => {
+  try {
+    const file = req.files.file
+    if (!file) {
+      return res.status(400).json({ message: "No file uploaded" })
+    }
+    if (!file.name.endsWith(".xlsx")) {
+      return res.status(400).json({
+        message: "Invalid file type. Please upload an Excel file.",
+      })
+    }
+
+    const tempDir =
+      process.env.NODE_ENV === "production"
+        ? "/tmp"
+        : path.join(__dirname, "..", "uploads")
+    const filePath = path.join(tempDir, file.name)
+
+    file.mv(filePath, async (err) => {
+      if (err) {
+        return res.status(500).json({
+          message: "File upload failed",
+          error: err.message,
+        })
+      }
+
+      try {
+        const workbook = xlsx.readFile(filePath)
+        const sheet = workbook.Sheets[workbook.SheetNames[0]]
+        const data = xlsx.utils.sheet_to_json(sheet, { defval: null })
+
+        if (data.length < 1) {
+          fs.unlinkSync(filePath)
+          return res.status(400).json({
+            message: "The Excel file must have at least one data row.",
+          })
+        }
+
+        let newStudents = 0
+        const defaultSemester = 1 // Set the default semester here
+
+        for (const row of data) {
+          const { studentId, name, roll, no, registrationNo, session, year } =
+            row
+
+          // Check for mandatory fields except semester
+          if (
+            !studentId ||
+            !name ||
+            !roll ||
+            !no ||
+            !registrationNo ||
+            !session ||
+            !year
+          ) {
+            fs.unlinkSync(filePath)
+            return res.status(400).json({
+              message: "Missing mandatory fields in the Excel file",
+              row,
+            })
+          }
+
+          const existingStudent = await Student.findOne({ studentId })
+
+          if (!existingStudent) {
+            // Save the new student with the default semester
+            const newStudent = new Student({
+              studentId,
+              name,
+              roll,
+              no,
+              registrationNo,
+              session,
+              year,
+              semesters: [
+                {
+                  semester: defaultSemester, // Use the default semester
+                  results: [], // Initialize results as an empty array
+                },
+              ],
+            })
+
+            // Save the new student and create password
+            await newStudent.save()
+            await createStudentPassword(newStudent.studentId)
+            newStudents++
+          }
+        }
+
+        fs.unlinkSync(filePath)
+
+        res.status(200).json({
+          message: "Students uploaded successfully",
+          newStudents,
+        })
+      } catch (error) {
+        fs.unlinkSync(filePath)
+        res.status(500).json({
+          message: "Error processing Excel file",
+          error: error.message,
+        })
+      }
+    })
+  } catch (error) {
+    res.status(500).json({
+      message: "Error uploading students",
+      error: error.message,
+    })
   }
 }
