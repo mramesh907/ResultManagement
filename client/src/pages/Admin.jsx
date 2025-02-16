@@ -5,10 +5,11 @@ import ScholarshipForm from "../components/ScholarshipForm"
 import SummaryApi from "../common/SummaryApi"
 import { FiLogOut } from "react-icons/fi"
 import Navbar from "./Navbar"
-import { FaFileUpload, FaDownload } from "react-icons/fa"
+import { FaFileUpload, FaDownload, FaEye, FaEyeSlash, FaFileExcel } from "react-icons/fa"
 import AdminCharts from "../components/AdminCharts"
 import Signup from "../components/Signup"
 import SemesterStudentList from "../components/SemesterStudentList"
+import AdminLogin from "../components/AdminLogin"
 const Admin = () => {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -259,55 +260,74 @@ const Admin = () => {
   return (
     <div className="p-6">
       {!isAuthenticated ? (
-        <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-purple-600 to-blue-500 px-4 rounded-lg">
-          <div className="bg-white shadow-md rounded-lg p-8 w-full max-w-md border border-blue-200">
-            <h2 className="text-2xl font-bold text-center text-blue-600 mb-6">
-              Admin Login
-            </h2>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  placeholder="Enter Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="p-3 text-sm border border-gray-300 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  placeholder="Enter Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="p-3 text-sm border border-gray-300 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
-                />
-              </div>
-              <button
-                type="submit"
-                className="w-full bg-blue-500 text-white p-3 rounded-lg text-sm font-medium shadow-md hover:shadow-lg transition duration-300"
-              >
-                Login
-              </button>
-            </form>
-            <p className="mt-6 text-center text-sm text-gray-600">
-              Forgot your password?{" "}
-              <a
-                href="/forgot-password"
-                className="text-blue-500 hover:underline"
-              >
-                Reset it here
-              </a>
-            </p>
-          </div>
-        </div>
+        <AdminLogin
+          handleLogin={handleLogin}
+          email={email}
+          setEmail={setEmail}
+          password={password}
+          setPassword={setPassword}
+          isAuthenticated={isAuthenticated}
+        />
       ) : (
+        // <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-purple-600 to-blue-500 px-4 rounded-lg">
+        //   <div className="bg-white shadow-md rounded-lg p-8 w-full max-w-md border border-blue-200">
+        //     <h2 className="text-2xl font-bold text-center text-blue-600 mb-6">
+        //       Admin Login
+        //     </h2>
+        //     <form onSubmit={handleLogin} className="space-y-4">
+        //       <div>
+        //         <label className="block text-sm font-medium text-gray-700 mb-1">
+        //           Email Address
+        //         </label>
+        //         <input
+        //           type="email"
+        //           placeholder="Enter Email"
+        //           value={email}
+        //           onChange={(e) => setEmail(e.target.value)}
+        //           className="p-3 text-sm border border-gray-300 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+        //         />
+        //       </div>
+        //       <div className="relative">
+        //         <label className="block text-sm font-medium text-gray-700 mb-1">
+        //           Password
+        //         </label>
+        //         <input
+        //           type={showNewPassword ? "text" : "password"}
+        //           placeholder="Enter Password"
+        //           value={password}
+        //           onChange={(e) => setPassword(e.target.value)}
+        //           className="p-3 text-sm border border-gray-300 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+        //         />
+        //         <button
+        //           type="button"
+        //           onClick={() => setShowNewPassword(!showNewPassword)}
+        //           className="absolute right-3 top-10 text-gray-500"
+        //         >
+        //           {showNewPassword ? (
+        //             <FaEyeSlash size={20} />
+        //           ) : (
+        //             <FaEye size={20} />
+        //           )}
+        //         </button>
+        //       </div>
+        //       <button
+        //         type="submit"
+        //         className="w-full bg-blue-500 text-white p-3 rounded-lg text-sm font-medium shadow-md hover:shadow-lg transition duration-300"
+        //       >
+        //         Login
+        //       </button>
+        //     </form>
+        //     <p className="mt-6 text-center text-sm text-gray-600">
+        //       Forgot your password?{" "}
+        //       <a
+        //         href="/forgot-password"
+        //         className="text-blue-500 hover:underline"
+        //       >
+        //         Reset it here
+        //       </a>
+        //     </p>
+        //   </div>
+        // </div>
         <div>
           <h2 className="text-2xl font-bold mb-4 flex justify-between items-center">
             Admin Panel
@@ -339,6 +359,7 @@ const Admin = () => {
                 className="flex items-center justify-center bg-green-500 text-white p-3 text-sm rounded-lg hover:bg-green-600 w-[50%] mb-4 transition duration-200 ease-in-out"
               >
                 <FaDownload className="mr-2" /> Download Demo Excel
+                <FaFileExcel className="ml-2" />
               </a>
 
               {/* File Input and Upload Button side by side */}
@@ -348,7 +369,8 @@ const Admin = () => {
                   htmlFor="file-upload"
                   className="cursor-pointer bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 flex items-center gap-2 transition duration-200 ease-in-out"
                 >
-                  <FaFileUpload />
+                  <FaFileExcel />
+                  {/* <FaFileUpload /> */}
                   <span>Choose File</span>
                 </label>
                 <input
@@ -536,7 +558,6 @@ const Admin = () => {
               )}
             </div>
           )}
-
           {/* Scholarship Form Section */}
           {selectedSection === "scholarships" && (
             <div className="mt-8">

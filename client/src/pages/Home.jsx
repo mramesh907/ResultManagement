@@ -74,7 +74,7 @@ const Home = () => {
 
       {/* Professional Info Section Below the Slider */}
       <div className="p-8 bg-gray-100">
-        <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md flex flex-col md:flex-row items-center space-y-6 md:space-y-0 md:space-x-8">
+        <div className="relative max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md flex flex-col md:flex-row items-center space-y-6 md:space-y-0 md:space-x-8 transition-shadow hover:shadow-xl border-2 border-transparent before:absolute before:inset-0 before:rounded-lg before:border-2 before:border-blue-600 before:opacity-0 before:animate-border-hover hover:before:opacity-100">
           {/* Your Photo */}
           <div className="flex-shrink-0 w-32 h-32 rounded-full overflow-hidden border-4 border-blue-600">
             <img
@@ -105,23 +105,24 @@ const Home = () => {
         </div>
 
         {/* Project Guide Details */}
-        {/* <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md flex flex-col md:flex-row items-center space-y-6 md:space-y-0 md:space-x-8 mt-8">
-          {/* Project Guide Photo */}
-          {/* <div className="flex-shrink-0 w-32 h-32 rounded-full overflow-hidden border-4 border-green-600">
+        <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md flex flex-col md:flex-row items-center space-y-6 md:space-y-0 md:space-x-8 mt-8 ">
+          
+          {/* Project Guide Photo*/}
+          <div className="flex-shrink-0 w-32 h-32 rounded-full overflow-hidden border-4 border-green-600">
             <img
               src={guiderPhoto}
               alt="Project Guide's Photo"
               className="w-full h-full object-cover"
             />
-          </div> */}
+          </div>
 
           {/* Project Guide Info */}
-          {/* <div className="flex flex-col items-center md:items-start">
+          <div className="flex flex-col items-center md:items-start">
             <h2 className="text-2xl font-semibold text-gray-800">
               Krishna Gopal Dhal
             </h2>
             <p className="text-gray-600">Project Guide</p>
-            <div className="mt-4 text-gray-700">
+            {/* <div className="mt-4 text-gray-700">
               <p>
                 <strong>Details:</strong>
               </p>
@@ -141,7 +142,7 @@ const Home = () => {
                 <li>H-index: 25 with 1,773 citations</li>
                 <li>Mentor for various student projects and research</li>
               </ul>
-            </div>
+            </div> */}
             <div className="mt-4 text-gray-700">
               <p>
                 <strong>Contact:</strong>{" "}
@@ -150,7 +151,7 @@ const Home = () => {
                 </a>
               </p>
               <p>
-                <strong>Profiles:</strong>
+                <strong>Profiles:</strong>{" "}
                 <a
                   href="https://scholar.google.co.in/citations?hl=en&user=Xu5U3VgAAAAJ"
                   target="_blank"
@@ -158,7 +159,7 @@ const Home = () => {
                 >
                   Google Scholar
                 </a>{" "}
-                |
+                |{" "}
                 <a
                   href="https://www.researchgate.net/profile/Krishna-Gopal-Dhal"
                   target="_blank"
@@ -168,10 +169,8 @@ const Home = () => {
                 </a>
               </p>
             </div>
-          </div> */}
-        {/* </div> */}
-
-        
+          </div>
+        </div>
       </div>
     </div>
   )
