@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 import SummaryApi from "../common/SummaryApi.js"
 import { toast } from "react-hot-toast"
-
+import { FaFileExcel, FaUpload, FaTimes } from "react-icons/fa"
 const ManualMarksEntry = () => {
   const [semester, setSemester] = useState("")
   const [isSemesterLocked, setIsSemesterLocked] = useState(false)
@@ -31,12 +31,50 @@ const ManualMarksEntry = () => {
     year: "",
     semester: "1",
   })
+  const [activeTab, setActiveTab] = useState("manual")
+  const [excelFile, setExcelFile] = useState(null)
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setStudentDetails((prev) => ({
       ...prev,
       [name]: value,
     }))
+  }
+  // Handle file selection for Excel upload
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0]
+    if (file) {
+      if (!file.name.endsWith(".xlsx")) {
+        toast.error("Please upload a valid Excel file (.xlsx)")
+        return
+      }
+      setExcelFile(file)
+    }
+  }
+
+  // Handle uploading the Excel file
+  const handleUploadExcel = async () => {
+    if (!excelFile) {
+      toast.error("Please select an Excel file to upload.")
+      return
+    }
+
+    const formData = new FormData()
+    formData.append("file", excelFile)
+
+    try {
+      const response = await SummaryApi.uploadStudent(formData)
+      console.log('response', response);
+      
+      toast.success(`${response.newStudents} students added successfully!`)
+      setShowPopup(false)
+    } catch (error) {
+      console.log('error',error);
+      
+      toast.error(
+        error.response?.data?.message || "Failed to upload students. Try again."
+      )
+    }
   }
 
   const handleAddStudent = async () => {
@@ -177,6 +215,7 @@ const ManualMarksEntry = () => {
     }
   }
   const handleKeyDown = (e) => {
+    const studentRows = document.querySelectorAll("tbody tr")
     if (e.key === "Enter") {
       e.preventDefault() // Prevent default Enter behavior
 
@@ -189,15 +228,30 @@ const ManualMarksEntry = () => {
         inputs[index + 1].focus()
       }
     }
+    if (e.key === "PageDown" || e.key === "ArrowDown") {
+      e.preventDefault() // Prevent default behavior
+
+      const currentRow = e.target.closest("tr")
+      const currentRowIndex = Array.from(studentRows).indexOf(currentRow)
+
+      // If there is a next row (next student), move focus to the CIA input of the next student
+      if (studentRows[currentRowIndex + 1]) {
+        const nextStudentRow = studentRows[currentRowIndex + 1]
+        const nextCiaInput = nextStudentRow.querySelectorAll("input")[0] // Find CIA input (first input in the next row)
+        if (nextCiaInput) {
+          nextCiaInput.focus() // Move focus to next student's CIA input
+        }
+      }
+    }
   }
 
-   const handleUpgradeInputChange = (e) => {
-     const { name, value } = e.target
-     setUpgradeDetails((prev) => ({
-       ...prev,
-       [name]: value,
-     }))
-   }
+  const handleUpgradeInputChange = (e) => {
+    const { name, value } = e.target
+    setUpgradeDetails((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
+  }
 
   const handleUpgradeStudents = async () => {
     const { currentSemester, upgradeSemester } = upgradeDetails
@@ -207,48 +261,48 @@ const ManualMarksEntry = () => {
       return
     }
 
-   try {
-     const response = await SummaryApi.upgradeSemester(
-       currentSemester,
-       upgradeSemester
-     )
+    try {
+      const response = await SummaryApi.upgradeSemester(
+        currentSemester,
+        upgradeSemester
+      )
 
-     if (response.success) {
-       toast.success(
-         `${response.message} Already upgraded: ${response.alreadyUpgraded}`
-       )
-       setShowUpgradePopup(false)
-       setUpgradeDetails({ currentSemester: "", upgradeSemester: "" })
-     } else if (response.error) {
-       // Specific error messages from the backend
-       if (
-         response.error.includes("Invalid current or upgrade semester value")
-       ) {
-         toast.error(
-           "Invalid semester values. Only one semester upgrade is allowed."
-         )
-       } else if (response.error.includes("No students found in semester")) {
-         toast.error(`No students found in semester ${currentSemester}.`)
-       } else if (
-         response.error.includes(
-           "All students in semester already have semester"
-         )
-       ) {
-         toast.error(
-           `All students in semester ${currentSemester} have already been upgraded to semester ${upgradeSemester}.`
-         )
-       } else {
+      if (response.success) {
+        toast.success(
+          `${response.message} Already upgraded: ${response.alreadyUpgraded}`
+        )
+        setShowUpgradePopup(false)
         setUpgradeDetails({ currentSemester: "", upgradeSemester: "" })
-         toast.error(response.error || "Failed to upgrade students.")
-       }
-     }
-   } catch (error) {
-     // Catch unexpected errors
-     toast.error(
-       error.response?.data?.error ||
-         "An unexpected error occurred while upgrading students."
-     )
-   }
+      } else if (response.error) {
+        // Specific error messages from the backend
+        if (
+          response.error.includes("Invalid current or upgrade semester value")
+        ) {
+          toast.error(
+            "Invalid semester values. Only one semester upgrade is allowed."
+          )
+        } else if (response.error.includes("No students found in semester")) {
+          toast.error(`No students found in semester ${currentSemester}.`)
+        } else if (
+          response.error.includes(
+            "All students in semester already have semester"
+          )
+        ) {
+          toast.error(
+            `All students in semester ${currentSemester} have already been upgraded to semester ${upgradeSemester}.`
+          )
+        } else {
+          setUpgradeDetails({ currentSemester: "", upgradeSemester: "" })
+          toast.error(response.error || "Failed to upgrade students.")
+        }
+      }
+    } catch (error) {
+      // Catch unexpected errors
+      toast.error(
+        error.response?.data?.error ||
+          "An unexpected error occurred while upgrading students."
+      )
+    }
   }
 
   return (
@@ -274,49 +328,119 @@ const ManualMarksEntry = () => {
             <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
               <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full md:w-1/2 lg:w-1/3 border-2 border-gray-300 overflow-y-auto max-h-[90vh]">
                 <h2 className="text-xl font-semibold text-center text-gray-800 mb-6">
-                  Add New Student
+                  Manage Students
                 </h2>
-                <div className="space-y-6">
-                  {[
-                    { name: "studentId", label: "Student ID" },
-                    { name: "name", label: "Name" },
-                    { name: "roll", label: "Roll" },
-                    { name: "no", label: "No" },
-                    { name: "registrationNo", label: "Registration No" },
-                    { name: "session", label: "Session" },
-                    { name: "year", label: "Year" },
-                    // { name: "semester", label: "Semester" },
-                  ].map((field) => (
-                    <div key={field.name}>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        {field.label}
-                      </label>
-                      <input
-                        type="text"
-                        name={field.name}
-                        value={studentDetails[field.name]}
-                        onChange={handleInputChange}
-                        placeholder={`Enter ${field.label}`}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                        required
-                      />
-                    </div>
-                  ))}
-                </div>
-                <div className="flex justify-end mt-6 space-x-4">
+
+                {/* Tabs for switching between manual and Excel upload */}
+                <div className="flex border-b border-gray-300 mb-4">
                   <button
-                    onClick={() => setShowPopup(false)}
-                    className="bg-red-500 text-white px-5 py-2 rounded-lg shadow hover:bg-red-600 transition duration-200"
-                  >
-                    Close
-                  </button>
-                  <button
-                    onClick={handleAddStudent}
-                    className="bg-green-500 text-white px-5 py-2 rounded-lg shadow hover:bg-green-600 transition duration-200"
+                    onClick={() => setActiveTab("manual")}
+                    className={`w-1/2 py-2 text-center ${
+                      activeTab === "manual"
+                        ? "border-b-2 border-blue-500 text-blue-500"
+                        : "text-gray-500"
+                    }`}
                   >
                     Add Student
                   </button>
+                  <button
+                    onClick={() => setActiveTab("excel")}
+                    className={`w-1/2 py-2 text-center ${
+                      activeTab === "excel"
+                        ? "border-b-2 border-blue-500 text-blue-500"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    Upload Excel
+                  </button>
                 </div>
+
+                {/* Manual Add Student Section */}
+                {activeTab === "manual" && (
+                  <div>
+                    {[
+                      { name: "studentId", label: "Student ID" },
+                      { name: "name", label: "Name" },
+                      { name: "roll", label: "Roll" },
+                      { name: "no", label: "No" },
+                      { name: "registrationNo", label: "Registration No" },
+                      { name: "session", label: "Session" },
+                      { name: "year", label: "Year" },
+                    ].map((field) => (
+                      <div key={field.name}>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          {field.label}
+                        </label>
+                        <input
+                          type="text"
+                          name={field.name}
+                          value={studentDetails[field.name]}
+                          onChange={handleInputChange}
+                          placeholder={`Enter ${field.label}`}
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                          required
+                        />
+                      </div>
+                    ))}
+                    <div className="flex justify-end mt-6 space-x-4">
+                      <button
+                        onClick={() => setShowPopup(false)}
+                        className="bg-red-500 text-white px-5 py-2 rounded-lg shadow hover:bg-red-600 transition duration-200"
+                      >
+                        Close
+                      </button>
+                      <button
+                        onClick={handleAddStudent}
+                        className="bg-green-500 text-white px-5 py-2 rounded-lg shadow hover:bg-green-600 transition duration-200"
+                      >
+                        Add Student
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Upload Excel Section */}
+                {activeTab === "excel" && (
+                  <div className="p-6 bg-white rounded-lg shadow-lg border border-gray-300">
+                    <h2 className="text-xl font-semibold text-gray-800 text-center mb-6 flex items-center justify-center space-x-2">
+                      <FaFileExcel className="text-green-500" />
+                      <span>Upload Excel File</span>
+                    </h2>
+                    <div className="space-y-4">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Select an Excel file to upload
+                      </label>
+                      <input
+                        type="file"
+                        accept=".xlsx"
+                        onChange={handleFileUpload}
+                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                      />
+                      <div className="text-sm text-gray-500 mt-2">
+                        <p>
+                          <strong>Note:</strong> Only files with{" "}
+                          <code>.xlsx</code> extension are accepted.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex justify-end mt-6 space-x-4">
+                      <button
+                        onClick={() => setShowPopup(false)}
+                        className="bg-red-500 text-white px-5 py-2 flex items-center space-x-2 rounded-lg shadow hover:bg-red-600 transition duration-200"
+                      >
+                        <FaTimes />
+                        <span>Close</span>
+                      </button>
+                      <button
+                        onClick={handleUploadExcel}
+                        className="bg-green-500 text-white px-5 py-2 flex items-center space-x-2 rounded-lg shadow hover:bg-green-600 transition duration-200"
+                      >
+                        <FaUpload />
+                        <span>Upload</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -355,12 +479,11 @@ const ManualMarksEntry = () => {
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
                       required
                     />
-                    
-                      <p className="text-red-500 text-sm mt-2">
-                        Only one semester upgrade is allowed. For example, if
-                        the current semester is 3, the upgrade semester must be
-                        4.
-                      </p>
+
+                    <p className="text-red-500 text-sm mt-2">
+                      Only one semester upgrade is allowed. For example, if the
+                      current semester is 3, the upgrade semester must be 4.
+                    </p>
                   </div>
                 </div>
                 <div className="flex justify-end mt-6 space-x-4">
@@ -380,6 +503,7 @@ const ManualMarksEntry = () => {
               </div>
             </div>
           )}
+          
 
           <h2 className="text-2xl font-semibold text-center mb-4">
             Paper Details

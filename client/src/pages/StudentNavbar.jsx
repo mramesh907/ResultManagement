@@ -7,7 +7,7 @@ const StudentNavbar = ({ selectedSection, onSectionChange }) => {
   const sections = [
     { id: "marksheet", label: "Marksheet" },
     { id: "scholarships", label: "Scholarships" },
-    { id: "comparison", label: "Compare Students" },
+    // { id: "comparison", label: "Compare Students" },
   ]
 
   return (

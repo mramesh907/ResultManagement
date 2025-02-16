@@ -70,6 +70,8 @@ const SummaryApi = {
     }),
   addStudent: async (studentData) =>
     apiRequest("/api/students/add-student", "POST", studentData),
+  uploadStudent: async (studentData) =>
+    apiRequest("/api/students/upload-student-excel", "POST", studentData),
   resultsUpload: async (studentData) =>
     apiRequest("/api/students/import", "POST", studentData),
   fetchStudentDetails: async (studentId, semester) =>

@@ -311,28 +311,22 @@ export const importStudentsFromExcel = async (req, res) => {
         }
 
         let updatedStudents = 0
-        let newStudents = 0
+        // let newStudents = 0
 
         for (const row of data) {
           const {
             "Student ID": studentId,
-            Name: name,
-            Roll: roll,
-            No: no,
-            "Reg No.": registrationNo,
-            Session: session,
-            Year: year,
             "Semester No": semester,
             ...subjectData
           } = row
 
           if (
             !studentId ||
-            !name ||
-            !roll ||
-            !registrationNo ||
-            !session ||
-            !year ||
+            // !name ||
+            // !roll ||
+            // !registrationNo ||
+            // !session ||
+            // !year ||
             !semester
           ) {
             fs.unlinkSync(filePath)
@@ -357,31 +351,32 @@ export const importStudentsFromExcel = async (req, res) => {
               updatedStudents++
               await existingStudent.save()
             }
-          } else {
-            // Save the new student and create password
-            const newStudent = new Student({
-              studentId,
-              name,
-              roll,
-              no,
-              registrationNo,
-              session,
-              year,
-              semesters: [{ semester, results }],
-            })
-
-            // Save the new student and create password
-            await newStudent.save()
-            await createStudentPassword(newStudent.studentId)
-            newStudents++
           }
+          //  else {
+          //   // Save the new student and create password
+          //   const newStudent = new Student({
+          //     studentId,
+          //     name,
+          //     roll,
+          //     no,
+          //     registrationNo,
+          //     session,
+          //     year,
+          //     semesters: [{ semester, results }],
+          //   })
+
+          //   // Save the new student and create password
+          //   await newStudent.save()
+          //   await createStudentPassword(newStudent.studentId)
+          //   newStudents++
+          // }
         }
 
         fs.unlinkSync(filePath)
 
         res.status(200).json({
-          message: "Students imported successfully",
-          newStudents,
+          message: "Students updated successfully",
+          // newStudents,
           updatedStudents,
         })
       } catch (error) {
@@ -1815,11 +1810,24 @@ export const uploadStudentsFromExcel = async (req, res) => {
                 },
               ],
             })
+              fs.unlinkSync(filePath)
 
             // Save the new student and create password
             await newStudent.save()
             await createStudentPassword(newStudent.studentId)
             newStudents++
+          }else{
+            if (existingStudent.no == no){
+              fs.unlinkSync(filePath)
+            existingStudent.name = name
+            existingStudent.roll = roll
+            existingStudent.no = no
+            existingStudent.registrationNo = registrationNo
+            existingStudent.session = session
+            existingStudent.year = year
+
+            await existingStudent.save()
+            }
           }
         }
 
@@ -1838,6 +1846,8 @@ export const uploadStudentsFromExcel = async (req, res) => {
       }
     })
   } catch (error) {
+    fs.unlinkSync(filePath)
+
     res.status(500).json({
       message: "Error uploading students",
       error: error.message,

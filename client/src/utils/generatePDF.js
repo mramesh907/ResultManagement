@@ -1,5 +1,9 @@
 import jsPDF from "jspdf"
 import "jspdf-autotable"
+const convertToRoman=(sem) => {
+  const roman = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"]
+  return sem <= 8 && sem >= 1 ? roman[sem - 1] : "N/A"
+}
 // Function to generate the student data PDF
 const generatePDF = (semesterData, gpa, preview = false) => {
 
@@ -43,9 +47,10 @@ const generatePDF = (semesterData, gpa, preview = false) => {
   )
   doc.text("Statement of Marks/Grade", 105, currentY + 20, "center")
   doc.setFontSize(12)
+  const romanSem = convertToRoman(semesterData.semester.semester)
   doc.text(
     `End Semester Examination of Semester: ${
-      semesterData.semester.semester || "N/A"
+      romanSem || "N/A"
     }`,
     105,
     currentY + 25,
@@ -194,7 +199,7 @@ const generatePDF = (semesterData, gpa, preview = false) => {
   doc.autoTable({
     head: [tableHeaders],
     body: tableData,
-    startY: currentY,
+    startY: currentY-5,
     theme: "grid",
     margin: { left: marginLeft },
     styles: {
@@ -239,12 +244,12 @@ const generatePDF = (semesterData, gpa, preview = false) => {
   const rowHeight = 10
 
   // Adjusted Text Alignment
-  doc.text(`Grand Total Credit Points: ${totalCredits}`, marginLeft, currentY)
-  doc.text(`SGPA: ${sgpa}`, marginLeft, currentY + rowHeight)
+  doc.text(`Grand Total Credit Points: ${totalCredits}`, marginLeft, currentY-5)
+  doc.text(`SGPA: ${sgpa}`, marginLeft, currentY + rowHeight-10)
   doc.text(
     `Credit Points: ${totalCreditPoints}`,
     rightColumnX,
-    currentY
+    currentY-5
   )
   // const cgpa = useCGPA || "N/A"
   // doc.text(`CGPA: ${cgpa}`, rightColumnX, currentY + rowHeight)
@@ -273,7 +278,7 @@ const generatePDF = (semesterData, gpa, preview = false) => {
       }
       
       return [
-        result.semester || "N/A",
+        convertToRoman(result.semester) || "N/A",
         result.sgpa || "N/A",
         result.cgpa || "N/A",
         ygpa,
@@ -290,27 +295,27 @@ const generatePDF = (semesterData, gpa, preview = false) => {
   doc.text(
     `Grand Total Marks: ${totalFullMarks}`,
     marginLeft,
-    currentY + rowHeight + 10
+    currentY + rowHeight -5
   )
 
   if(cgpaforsem !== "N/A") {
-      doc.text(`CGPA: ${cgpaforsem}`, rightColumnX, currentY + rowHeight)
+      doc.text(`CGPA: ${cgpaforsem}`, rightColumnX, currentY + rowHeight-10)
   }
 
   doc.text(
     `Total Marks Obtained: ${totalMarksObtained}`,
     rightColumnX,
-    currentY + rowHeight + 10
+    currentY + rowHeight -5
   )
   currentY += 2 * rowHeight // Increased to account for extra spacing
 
   currentY = checkAndAddPage(doc, currentY)
 
-  doc.text(`Percentage: ${percentage}%`, marginLeft, currentY + 10)
-  doc.text(`Result: ${resultClass}`, rightColumnX, currentY + 10)
+  doc.text(`Percentage: ${percentage}%`, marginLeft, currentY -10)
+  doc.text(`Result: ${resultClass}`, rightColumnX, currentY -10)
   currentY += rowHeight
 
-  doc.text(`Remarks: ${resultRemark}`, marginLeft, currentY + 10)
+  doc.text(`Remarks: ${resultRemark}`, marginLeft, currentY -15)
   currentY += 20
 
   const currentDate = new Date().toLocaleDateString("en-GB", {
@@ -337,14 +342,14 @@ const generatePDF = (semesterData, gpa, preview = false) => {
   doc.setFontSize(14)
   currentY += 4
 
-  doc.text("Summary", marginLeft, currentY)
-  currentY += 4
+  doc.text("Summary", marginLeft, currentY-30)
+  // currentY += 4
   currentY = checkAndAddPage(doc, currentY)
 
   doc.autoTable({
     head: [summaryHeaders],
     body: summaryData,
-    startY: currentY,
+    startY: currentY-25,
     theme: "grid",
     margin: { left: marginLeft },
     styles: {
