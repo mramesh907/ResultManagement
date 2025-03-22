@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react"
 import generatePDF from "../utils/generatePDF.js" // Import your PDF generation function
-
+import ConfirmModal from "./ConfirmBox.jsx"
 import SummaryApi from "../common/SummaryApi"
 import toast from "react-hot-toast"
 
@@ -12,6 +12,7 @@ const SemesterStudentList = () => {
   const [semesterData, setSemesterData] = useState(null)
   const [gpa, setGPA] = useState(null)
   const [selectedStudent, setSelectedStudent] = useState(null) // Track the selected student
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, studentId: null })
 
   const fetchStudentData = async (studentId, semester) => {
     try {
@@ -62,6 +63,24 @@ const SemesterStudentList = () => {
     setSelectedStudent({ studentId, semester })
   }
 
+  const handleDeleteStudent = async () => {
+    if (!confirmModal.studentId) return
+
+    try {
+      await SummaryApi.deleteStudent(confirmModal.studentId)
+      toast.success("Student deleted successfully!")
+      setStudents((prevStudents) =>
+        prevStudents.filter(
+          (student) => student.studentId !== confirmModal.studentId
+        )
+      )
+    } catch (error) {
+      toast.error("Failed to delete student. Please try again.")
+    } finally {
+      setConfirmModal({ isOpen: false, studentId: null }) // Close modal
+    }
+  }
+
   // Generate PDF when semesterData and GPA are available
   useEffect(() => {
     if (selectedStudent) {
@@ -93,11 +112,9 @@ const SemesterStudentList = () => {
             onChange={handleSemesterChange}
             className="px-4 py-2 border rounded-lg bg-white shadow-sm focus:outline-none focus:ring focus:ring-blue-300 cursor-pointer"
           >
-            <option value="">
-              -- Select Semester --
-            </option>
+            <option value="">-- Select Semester --</option>
             {[...Array(8).keys()].map((i) => (
-              <option  key={i + 1} value={i + 1}>
+              <option key={i + 1} value={i + 1}>
                 Semester {i + 1}
               </option>
             ))}
@@ -136,7 +153,7 @@ const SemesterStudentList = () => {
                     <td className="px-4 py-2 border border-gray-300">
                       {student.name}
                     </td>
-                    <td className="px-4 py-2 border border-gray-300 text-center">
+                    <td className="px-4 py-2 border border-gray-300 text-center flex justify-center gap-3">
                       <button
                         onClick={() =>
                           handleGeneratePDF(student.studentId, semester, true)
@@ -144,6 +161,17 @@ const SemesterStudentList = () => {
                         className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 focus:outline-none focus:ring focus:ring-green-300"
                       >
                         Preview PDF
+                      </button>
+                      <button
+                        onClick={() =>
+                          setConfirmModal({
+                            isOpen: true,
+                            studentId: student.studentId,
+                          })
+                        }
+                        className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 focus:outline-none focus:ring focus:ring-red-300"
+                      >
+                        Delete
                       </button>
                     </td>
                   </tr>
@@ -159,6 +187,13 @@ const SemesterStudentList = () => {
           </div>
         )}
       </div>
+      {/* Confirm Modal Component */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ isOpen: false, studentId: null })}
+        onConfirm={handleDeleteStudent}
+        message="Are you sure you want to delete this student?"
+      />
     </div>
   )
 }

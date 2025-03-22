@@ -23,6 +23,7 @@ import {
   addStudentWithDynamicSemester,
   upgradeSemester,
   uploadStudentsFromExcel,
+  deleteStudentById
 } from "../controllers/student.contoller.js" // Import the controller
 
 const router = express.Router()
@@ -69,6 +70,7 @@ router.get("/admin/semester-wise-performance", semesterPerformance);
 // Protected Routes (Requires Authentication)
 // ----------------------
 router.post("/add-student", addNewStudent); // Add a new student
+router.delete("/delete-student/:studentId", deleteStudentById); // delete student
 router.post("/import", importStudentsFromExcel); // Import students from an Excel file
 router.post("/update-marks", updateMarksForSemester); // Update marks for a semester
 router.post("/upload-student-excel", uploadStudentsFromExcel);

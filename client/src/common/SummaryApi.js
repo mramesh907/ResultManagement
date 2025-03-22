@@ -70,6 +70,8 @@ const SummaryApi = {
     }),
   addStudent: async (studentData) =>
     apiRequest("/api/students/add-student", "POST", studentData),
+  deleteStudent: async (studentId) =>
+    apiRequest(`/api/students/delete-student/${studentId}`, "DELETE"),
   uploadStudent: async (studentData) =>
     apiRequest("/api/students/upload-student-excel", "POST", studentData),
   resultsUpload: async (studentData) =>

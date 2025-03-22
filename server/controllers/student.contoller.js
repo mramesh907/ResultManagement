@@ -395,6 +395,30 @@ export const importStudentsFromExcel = async (req, res) => {
   }
 }
 
+export const deleteStudentById = async (req, res) => {
+  try {
+    const { studentId } = req.params // Get student ID from request params
+
+    // Find the student
+    const student = await Student.findOne({ studentId })
+
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" })
+    }
+
+    // Delete student record
+    await Student.deleteOne({ studentId })
+
+    // Delete associated student password record
+    await StudentPasswordModel.deleteOne({ studentId: student._id })
+
+    return res.status(200).json({ message: "Student deleted successfully" })
+  } catch (error) {
+    console.error("Error deleting student:", error)
+    return res.status(500).json({ message: "Internal server error" })
+  }
+}
+
 
 // Utility function to parse subject data
 const parseSubjectData = (subjectData) => {
