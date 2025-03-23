@@ -7,6 +7,7 @@ import fs from "fs"
 import path from "path"
 import { fileURLToPath } from "url"
 import { error } from "console"
+import mongoose from "mongoose";
 // import upload from "../config/upload.js"
 
 // Get the current directory path
@@ -719,50 +720,54 @@ export const getStudentsBySemester = async (req, res) => {
 // Function to upgrade a student's semester
 export const upgradeSemester = async (req, res) => {
   try {
-    const { currentSemester, upgradeSemester } = req.body
-    // Validate the current and upgrade semester parameters
-    const validSemesters = ["1", "2", "3", "4", "5", "6", "7", "8"]
+    const { currentSemester, upgradeSemester, studentIds } = req.body;
+
+    // Validate request
     if (
       !currentSemester ||
       !upgradeSemester ||
-      !validSemesters.includes(currentSemester) ||
-      !validSemesters.includes(upgradeSemester) ||
-      parseInt(upgradeSemester) !== parseInt(currentSemester) + 1
+      !studentIds ||
+      !Array.isArray(studentIds) ||
+      studentIds.length === 0
     ) {
-      return res
-        .status(400)
-        .json({ error: "Invalid current or upgrade semester value." })
+      return res.status(400).json({ error: "Invalid request. Provide valid semester values and selected students." });
+    }
+
+    // Convert studentIds to ObjectId
+    const validStudentIds = studentIds
+      .filter((id) => mongoose.Types.ObjectId.isValid(id)) // Ensure only valid ObjectIds
+      .map((id) => new mongoose.Types.ObjectId(id));
+
+    if (validStudentIds.length === 0) {
+      return res.status(400).json({ error: "No valid student IDs provided." });
     }
 
     // Find students in the current semester
     const students = await Student.find({
+      _id: { $in: validStudentIds },
       "semesters.semester": currentSemester,
-    })
+    });
 
     if (students.length === 0) {
-      return res
-        .status(404)
-        .json({ error: `No students found in semester ${currentSemester}.` })
+      return res.status(404).json({ error: `No selected students found in semester ${currentSemester}.` });
     }
 
     // Separate students who already have the upgrade semester
     const studentsWithUpgradeSemester = students.filter((student) =>
       student.semesters.some((sem) => sem.semester === upgradeSemester)
-    )
+    );
 
     const studentsWithoutUpgradeSemester = students.filter(
-      (student) =>
-        !student.semesters.some((sem) => sem.semester === upgradeSemester)
-    )
+      (student) => !student.semesters.some((sem) => sem.semester === upgradeSemester)
+    );
 
-    // If no students are eligible for an upgrade
     if (studentsWithoutUpgradeSemester.length === 0) {
       return res.status(400).json({
-        error: `All students in semester ${currentSemester} already have semester ${upgradeSemester}.`,
-      })
+        error: `All selected students already have semester ${upgradeSemester}.`,
+      });
     }
 
-    // Prepare bulk operations for students who don't have the upgrade semester
+    // Bulk update students
     const bulkOps = studentsWithoutUpgradeSemester.map((student) => ({
       updateOne: {
         filter: { _id: student._id },
@@ -772,21 +777,22 @@ export const upgradeSemester = async (req, res) => {
           },
         },
       },
-    }))
+    }));
 
-    // Execute the bulk update operation
-    await Student.bulkWrite(bulkOps)
+    await Student.bulkWrite(bulkOps);
 
     return res.status(200).json({
       success: true,
       message: `Successfully upgraded ${studentsWithoutUpgradeSemester.length} students to semester ${upgradeSemester}.`,
       alreadyUpgraded: studentsWithUpgradeSemester.length,
-    })
+    });
   } catch (error) {
-    console.error("Error upgrading semester:", error)
-    res.status(500).json({ error: "Internal Server Error." })
+    console.error("Error upgrading semester:", error);
+    res.status(500).json({ error: "Internal Server Error." });
   }
-}
+};
+
+
 
 
 // Function to handle the submission of marks

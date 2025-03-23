@@ -63,11 +63,13 @@ const SummaryApi = {
   // Student Management
   addStudentWithDynamicSemester: async (studentData) =>
     apiRequest("/api/students/add-student-dynamic", "POST", studentData),
-  upgradeSemester: async (currentSemester, upgradeSemester) =>
+  upgradeSemester: async (currentSemester, upgradeSemester, studentIds) =>
     apiRequest("/api/students/upgrade-semester", "POST", {
       currentSemester,
       upgradeSemester,
+      studentIds, // Include selected student IDs for upgrading
     }),
+  
   addStudent: async (studentData) =>
     apiRequest("/api/students/add-student", "POST", studentData),
   deleteStudent: async (studentId) =>

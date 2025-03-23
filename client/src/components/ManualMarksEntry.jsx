@@ -2,6 +2,7 @@ import React, { useState } from "react"
 import SummaryApi from "../common/SummaryApi.js"
 import { toast } from "react-hot-toast"
 import { FaFileExcel, FaUpload, FaTimes } from "react-icons/fa"
+import UpgradeStudents from "./UpgradeStudent.jsx"
 const ManualMarksEntry = () => {
   const [semester, setSemester] = useState("")
   const [isSemesterLocked, setIsSemesterLocked] = useState(false)
@@ -445,64 +446,9 @@ const ManualMarksEntry = () => {
             </div>
           )}
           {/* Upgrade Popup */}
-          {showUpgradePopup && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-              <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full md:w-1/2 lg:w-1/3 border-2 border-gray-300 overflow-y-auto max-h-[90vh]">
-                <h2 className="text-xl font-semibold text-center text-gray-800 mb-6">
-                  Upgrade Students
-                </h2>
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Current Semester
-                    </label>
-                    <input
-                      type="text"
-                      name="currentSemester"
-                      value={upgradeDetails.currentSemester}
-                      onChange={handleUpgradeInputChange}
-                      placeholder="Enter Current Semester"
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Upgrade Semester
-                    </label>
-                    <input
-                      type="text"
-                      name="upgradeSemester"
-                      value={upgradeDetails.upgradeSemester}
-                      onChange={handleUpgradeInputChange}
-                      placeholder="Enter Upgrade Semester"
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                      required
-                    />
-
-                    <p className="text-red-500 text-sm mt-2">
-                      Only one semester upgrade is allowed. For example, if the
-                      current semester is 3, the upgrade semester must be 4.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex justify-end mt-6 space-x-4">
-                  <button
-                    onClick={() => setShowUpgradePopup(false)}
-                    className="bg-red-500 text-white px-5 py-2 rounded-lg shadow hover:bg-red-600 transition duration-200"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleUpgradeStudents}
-                    className="bg-green-500 text-white px-5 py-2 rounded-lg shadow hover:bg-green-600 transition duration-200"
-                  >
-                    Upgrade
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+          {showUpgradePopup && 
+            <UpgradeStudents onClose={()=>setShowUpgradePopup(false)}/>
+          }
           
 
           <h2 className="text-2xl font-semibold text-center mb-4">
