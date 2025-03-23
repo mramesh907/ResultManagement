@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import SummaryApi from "../common/SummaryApi";
 import { toast } from "react-hot-toast";
-
+ 
 const UpgradeStudents = ({ onClose }) => {
   const [step, setStep] = useState(1);
   const [upgradeDetails, setUpgradeDetails] = useState({
