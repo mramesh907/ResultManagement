@@ -4,7 +4,7 @@ import { Pie } from "react-chartjs-2"
 ChartJS.register(ArcElement, Tooltip, Legend)
 import React, { useEffect, useState } from "react"
 import SummaryApi from "../common/SummaryApi.js" // Adjust the path based on your folder structure
-
+ 
 const AdminCharts = () => {
   const [semesterCountData, setSemesterCountData] = useState([])
   const [performanceData, setPerformanceData] = useState([])
