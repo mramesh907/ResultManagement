@@ -2,13 +2,15 @@ import React, { useState } from "react"
 import { toast } from "react-hot-toast"
 import { useNavigate } from "react-router-dom"
 import SummaryApi from "../common/SummaryApi" // Adjust import path if needed
-
+import { FaEye, FaEyeSlash } from "react-icons/fa" 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [emailVerified, setEmailVerified] = useState(false)
   const [timer, setTimer] = useState(0) // Timer state
+  const [showNewPassword, setShowNewPassword] = useState(false) // 👈 new state
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false) // 👈 new state
   const navigate = useNavigate() // Hook for navigation
 
   const verifyEmail = async (e) => {
@@ -31,9 +33,24 @@ const ForgotPassword = () => {
       toast.error("Passwords do not match!")
       return
     }
-    try {
-      const response = await SummaryApi.resetPassword(email, newPassword) // Send email and new password in body
+    if (newPassword === email) {
+      toast.error("Password cannot be same as email!")
+      return
+    }
+    if (
+      !confirmPassword ||
+      confirmPassword.trim() === "" ||
+      !newPassword ||
+      newPassword.trim() === ""
+    ) {
+      toast.error("Please fill in both Password and Confirm Password.")
+      return
+    }
 
+    try {
+      // Check if password is not empty
+
+      const response = await SummaryApi.resetPassword(email, confirmPassword) // Send email and new password in body
 
       if (response.status) {
         toast.success("Password reset successful! You can now log in.")
@@ -89,25 +106,41 @@ const ForgotPassword = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 New Password
               </label>
-              <input
-                type="password"
-                placeholder="Enter new password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="p-3 text-sm border border-gray-300 rounded w-full focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400"
-              />
+              <div className="relative">
+                <input
+                  type={showNewPassword ? "text" : "password"}
+                  placeholder="Enter new password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="p-3 text-sm border border-gray-300 rounded w-full focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400"
+                />
+                <span
+                  onClick={() => setShowNewPassword((prev) => !prev)}
+                  className="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-600 cursor-pointer"
+                >
+                  {showNewPassword ? <FaEyeSlash /> : <FaEye />}
+                </span>
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Confirm Password
               </label>
-              <input
-                type="password"
-                placeholder="Confirm new password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="p-3 text-sm border border-gray-300 rounded w-full focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400"
-              />
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Confirm new password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="p-3 text-sm border border-gray-300 rounded w-full focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400"
+                />
+                <span
+                  onClick={() => setShowConfirmPassword((prev) => !prev)}
+                  className="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-600 cursor-pointer"
+                >
+                  {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                </span>
+              </div>
             </div>
             <button
               type="submit"
@@ -117,7 +150,8 @@ const ForgotPassword = () => {
             </button>
             {timer > 0 && (
               <p className="text-sm text-center mt-3 text-gray-500">
-                Redirecting to admin page in {timer} second{timer !== 1 ? "s" : ""}
+                Redirecting to admin page in {timer} second
+                {timer !== 1 ? "s" : ""}
               </p>
             )}
           </form>
