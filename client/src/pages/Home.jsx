@@ -89,7 +89,7 @@ const Home = () => {
             <h2 className="text-2xl font-semibold text-gray-800">
               Ramesh Maity
             </h2>
-            <p className="text-gray-600">Aspiring Backend Developer</p>
+            <p className="text-gray-600">Developer of this Website</p>
             <div className="mt-4 text-gray-700">
               <p>
                 <strong>Qualifications:</strong>
@@ -106,7 +106,6 @@ const Home = () => {
 
         {/* Project Guide Details */}
         <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md flex flex-col md:flex-row items-center space-y-6 md:space-y-0 md:space-x-8 mt-8 ">
-          
           {/* Project Guide Photo*/}
           <div className="flex-shrink-0 w-32 h-32 rounded-full overflow-hidden border-4 border-green-600">
             <img
