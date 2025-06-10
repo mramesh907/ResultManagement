@@ -1,7 +1,12 @@
 import React, { useState } from "react"
 import SummaryApi from "../common/SummaryApi.js"
 import { toast } from "react-hot-toast"
-import { FaFileExcel, FaUpload, FaTimes } from "react-icons/fa"
+import {
+  FaFileExcel,
+  FaUpload,
+  FaTimes,
+  FaDownload,
+} from "react-icons/fa"
 import UpgradeStudents from "./UpgradeStudent.jsx"
 const ManualMarksEntry = () => {
   const [semester, setSemester] = useState("")
@@ -423,7 +428,20 @@ const ManualMarksEntry = () => {
                           <code>.xlsx</code> extension are accepted.
                         </p>
                       </div>
+
+                      {/* Download Demo Excel Button */}
+                      <div className="mt-4">
+                        <a
+                          href="https://drive.google.com/uc?export=download&id=1Y83iGIAIpGjapfGne0mGYdUzc5ZADgEZ"
+                          download
+                          className="inline-flex items-center bg-green-500 text-white px-4 py-2 rounded-lg shadow hover:bg-green-600 transition duration-200 text-sm"
+                        >
+                          <FaDownload className="mr-2" />
+                          Download Demo Excel
+                        </a>
+                      </div>
                     </div>
+
                     <div className="flex justify-end mt-6 space-x-4">
                       <button
                         onClick={() => setShowPopup(false)}
@@ -446,10 +464,9 @@ const ManualMarksEntry = () => {
             </div>
           )}
           {/* Upgrade Popup */}
-          {showUpgradePopup && 
-            <UpgradeStudents onClose={()=>setShowUpgradePopup(false)}/>
-          }
-          
+          {showUpgradePopup && (
+            <UpgradeStudents onClose={() => setShowUpgradePopup(false)} />
+          )}
 
           <h2 className="text-2xl font-semibold text-center mb-4">
             Paper Details
